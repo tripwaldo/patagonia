@@ -14,18 +14,25 @@
         .indicator-dot { height: 7px; width: 7px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
         .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
         .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%); }
+        /* Verhindert das Kontextmenü beim Halten des Bildes */
+        #home-img { -webkit-touch-callout: none; user-select: none; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
-    <!-- Header & Hero Image (Höhe auf h-80 erhöht für größeres Bild) -->
+    <!-- VOLLBILD OVERLAY (Standardmäßig versteckt) -->
+    <div id="image-overlay" class="hidden fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <img id="overlay-img" src="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl border-2 border-white/20">
+        <p class="absolute bottom-10 text-white/70 text-xs uppercase tracking-widest italic">Lass los zum Schließen</p>
+    </div>
+
+    <!-- Header & Hero Image -->
     <header class="relative bg-slate-900 text-white overflow-hidden shadow-lg h-80">
         <div id="hero-img-container" class="absolute inset-0 bg-slate-800">
             <img id="hero-img" src="" alt="Region" class="w-full h-full object-cover opacity-70 transition-opacity duration-500">
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
         
-        <!-- Top Nav -->
         <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10 text-white">
             <button onclick="changeDay(-1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10">◀</button>
             <div class="text-center">
@@ -35,7 +42,6 @@
             <button onclick="changeDay(1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10">▶</button>
         </div>
 
-        <!-- Bottom Info Area -->
         <div class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end z-10">
             <div>
                 <p id="display-date" class="text-3xl font-black drop-shadow-lg leading-none">--. --</p>
@@ -43,13 +49,12 @@
             </div>
 
             <div class="flex flex-col items-end space-y-3">
-                <!-- Unterkunft: Bild doppelt so groß (w-32 h-24) & Hometitle -->
+                <!-- Unterkunft: Bild mit Halte-Funktion -->
                 <div id="home-preview" class="hidden flex flex-col items-end">
-                    <img id="home-img" src="" class="w-32 h-24 object-cover rounded-xl border-2 border-white/40 shadow-2xl bg-slate-700">
+                    <img id="home-img" src="" class="w-32 h-24 object-cover rounded-xl border-2 border-white/40 shadow-2xl bg-slate-700 cursor-zoom-in">
                     <span id="home-title" class="text-[10px] text-white font-black mt-2 max-w-[120px] truncate text-right drop-shadow-md uppercase tracking-tight">Hotel</span>
                 </div>
 
-                <!-- Sun Times -->
                 <div class="flex space-x-3 text-[11px] font-mono bg-black/60 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10 shadow-xl">
                     <span>🌅 <span id="sunrise">--:--</span></span>
                     <span>🌇 <span id="sunset">--:--</span></span>
@@ -58,8 +63,7 @@
         </div>
     </header>
 
-    <!-- Navigation Tab Bar -->
-    <nav class="bg-white flex justify-around shadow-md sticky top-0 z-20 border-b border-slate-200">
+    <nav class="bg-white flex justify-around shadow-md sticky top-0 z-20 border-b border-slate-200 text-center">
         <button onclick="switchTab('logistik')" id="btn-logistik" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">Logistik<span id="dot-logistik" class="indicator-dot hidden"></span></button>
         <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">Aktivität<span id="dot-aktiv" class="indicator-dot hidden"></span></button>
         <button onclick="switchTab('foto')" id="btn-foto" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">Wichtig<span id="dot-foto" class="indicator-dot hidden"></span></button>
@@ -139,14 +143,31 @@
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
             document.getElementById('hero-img').src = regionImages[regionKey] || regionImages["default"];
 
-            // Unterkunft Logik mit Hometitle Spalte
+            // Unterkunft Logik mit Overlay-Steuerung
             const homeItem = items.find(i => i.Home && i.Home.trim() !== "");
             const homePreview = document.getElementById('home-preview');
+            const homeImg = document.getElementById('home-img');
+            const overlay = document.getElementById('image-overlay');
+            const overlayImg = document.getElementById('overlay-img');
+
             if(homeItem) {
                 homePreview.classList.remove('hidden');
-                document.getElementById('home-img').src = homeItem.Home;
-                // Nutzt Hometitle, Fallback auf Titel falls Hometitle leer ist
-                document.getElementById('home-title').innerText = homeItem.Hometitle || homeItem.Titel || "Unterkunft";
+                homeImg.src = homeItem.Home;
+                document.getElementById('home-title').innerText = homeItem.Hometitle || homeItem.Titel;
+
+                // Event Listener für Peek-Funktion
+                const showPeek = (e) => {
+                    e.preventDefault();
+                    overlayImg.src = homeItem.Home;
+                    overlay.classList.remove('hidden');
+                };
+                const hidePeek = () => overlay.classList.add('hidden');
+
+                homeImg.onmousedown = showPeek;
+                homeImg.ontouchstart = showPeek;
+                window.onmouseup = hidePeek;
+                window.ontouchend = hidePeek;
+                window.ontouchcancel = hidePeek;
             } else {
                 homePreview.classList.add('hidden');
             }
@@ -154,7 +175,7 @@
             // Indikatoren
             document.getElementById('dot-logistik').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert'));
             document.getElementById('dot-aktiv').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Aktivität'));
-            document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv));
+            document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv || i.Wichtig));
 
             document.getElementById('day-alerts').innerHTML = "";
             document.getElementById('sec-logistik').innerHTML = "";
@@ -166,7 +187,7 @@
                 if (item.Typ === "Alert") document.getElementById('day-alerts').appendChild(createAlertCard(item));
                 if (item.Kategorie === "Logistik" && item.Typ !== "Alert") document.getElementById('sec-logistik').appendChild(createCard(item, icon));
                 else if (item.Kategorie === "Aktivität") document.getElementById('sec-aktiv').appendChild(createCard(item, icon));
-                if (item.Risiko || item["Shot idea"] || item.Objektiv) document.getElementById('sec-foto').appendChild(createInfoCard(item));
+                if (item.Risiko || item["Shot idea"] || item.Objektiv || item.Wichtig) document.getElementById('sec-foto').appendChild(createInfoCard(item));
             });
             switchTab('logistik'); 
         }
@@ -175,16 +196,16 @@
             const div = document.createElement('div');
             div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-3";
             div.innerHTML = `
-                <div class="flex justify-between items-start">
+                <div class="flex justify-between items-start text-sm">
                     <div class="flex items-center space-x-4">
                         <div class="text-3xl">${icon}</div>
                         <div class="overflow-hidden">
                             <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">${item.Typ}</span>
-                            <h3 class="font-bold text-slate-800 leading-tight truncate text-sm">${item.Titel}</h3>
+                            <h3 class="font-bold text-slate-800 leading-tight truncate">${item.Titel}</h3>
                         </div>
                     </div>
                     <div class="text-right min-w-[60px]">
-                        <p class="font-bold text-blue-900 text-sm">${item.Startzeit || ''}</p>
+                        <p class="font-bold text-blue-900">${item.Startzeit || ''}</p>
                     </div>
                 </div>
                 ${item.Details ? `<p class="text-xs text-slate-500 mt-3 ml-12 leading-relaxed italic border-l-2 border-slate-100 pl-3">${item.Details}</p>` : ''}
@@ -204,15 +225,34 @@
 
         function createInfoCard(item) {
             const div = document.createElement('div');
-            div.className = "bg-slate-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-orange-500 mb-3";
-            div.innerHTML = `
-                <h3 class="font-bold text-orange-400 text-[10px] mb-2 uppercase tracking-widest">${item.Titel}</h3>
-                ${item.Risiko ? `<p class="text-sm text-red-300 mb-3 font-bold leading-tight">⚠️ ${item.Risiko}</p>` : ''}
-                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300 leading-relaxed">"📸 ${item["Shot idea"]}"</p>` : ''}
-                <div class="grid grid-cols-2 gap-3 mt-4 text-[9px]">
-                    ${item.Objektiv ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Linse:</strong><br>${item.Objektiv}</div>` : ''}
-                    ${item["Bestes Licht"] ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>` : ''}
-                </div>`;
+            div.className = "bg-slate-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-orange-500 mb-4";
+            
+            let htmlContent = `<h3 class="font-bold text-orange-400 text-[10px] mb-3 uppercase tracking-widest">${item.Titel}</h3>`;
+
+            if (item.Wichtig && item.Wichtig.trim() !== "") {
+                htmlContent += `
+                    <div class="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                        <p class="text-[10px] text-orange-300 uppercase font-bold mb-1">💡 Wichtiger Hinweis</p>
+                        <p class="text-sm leading-relaxed">${item.Wichtig}</p>
+                    </div>`;
+            }
+
+            if (item.Risiko && item.Risiko.trim() !== "") {
+                htmlContent += `<p class="text-sm text-red-300 mb-3 font-bold leading-tight uppercase">⚠️ Risiko: ${item.Risiko}</p>`;
+            }
+
+            if (item["Shot idea"] && item["Shot idea"].trim() !== "") {
+                htmlContent += `<p class="text-xs italic text-slate-300 leading-relaxed mb-3">"📸 ${item["Shot idea"]}"</p>`;
+            }
+
+            if (item.Objektiv || item["Bestes Licht"]) {
+                htmlContent += `<div class="grid grid-cols-2 gap-3 mt-2 text-[9px]">`;
+                if (item.Objektiv) htmlContent += `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Linse:</strong><br>${item.Objektiv}</div>`;
+                if (item["Bestes Licht"]) htmlContent += `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>`;
+                htmlContent += `</div>`;
+            }
+
+            div.innerHTML = htmlContent;
             return div;
         }
 
