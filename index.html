@@ -14,6 +14,7 @@
         .indicator-dot { height: 7px; width: 7px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
         .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
         .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%); }
+        .spot-text-gradient { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); }
         #home-img { -webkit-touch-callout: none; user-select: none; pointer-events: auto; }
         body { overscroll-behavior-y: contain; overflow-x: hidden; width: 100%; position: relative; }
         .snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
@@ -22,14 +23,14 @@
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
-    <!-- FOTOSPOT OVERLAY -->
-    <div id="spot-overlay" class="hidden fixed inset-0 z-[110] bg-slate-900/95 backdrop-blur-md flex flex-col">
-        <div class="p-6 flex justify-between items-center text-white">
-            <h2 id="spot-overlay-title" class="text-xl font-bold italic tracking-tight">Fotospots</h2>
-            <button onclick="closeSpotOverlay()" class="text-3xl p-2">&times;</button>
+    <!-- FOTOSPOT OVERLAY (Maximiert) -->
+    <div id="spot-overlay" class="hidden fixed inset-0 z-[110] bg-black flex flex-col">
+        <!-- Close Button oben rechts -->
+        <button onclick="closeSpotOverlay()" class="absolute top-6 right-6 z-[120] bg-black/20 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl border border-white/10 shadow-2xl">&times;</button>
+        
+        <div id="spot-slider" class="flex-1 flex overflow-x-auto snap-x h-full">
+            <!-- Spots füllen hier den ganzen Screen -->
         </div>
-        <div id="spot-slider" class="flex-1 flex overflow-x-auto snap-x gap-6 px-6 pb-10 items-center"></div>
-        <p class="text-center text-white/40 text-[10px] mb-8 uppercase tracking-[0.3em]">Wische horizontal durch die Spots</p>
     </div>
 
     <!-- VOLLBILD UNTERKUNFT OVERLAY -->
@@ -48,7 +49,7 @@
         <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10 text-white">
             <button onclick="changeDay(-1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10">◀</button>
             <div class="text-center">
-                <div id="display-region" class="text-[10px] uppercase tracking-[0.2em] text-blue-300 font-bold drop-shadow-md">Region</div>
+                <div id="display-region" class="text-[10px] uppercase tracking-[0.2em] text-blue-300 font-bold drop-shadow-md font-sans">Region</div>
                 <h1 id="display-day" class="text-xl font-bold italic drop-shadow-md tracking-tight">Lade...</h1>
             </div>
             <button onclick="changeDay(1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10">▶</button>
@@ -141,7 +142,7 @@
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
             document.getElementById('hero-img').src = regionImages[regionKey] || regionImages["default"];
 
-            const hasSpots = spotData.some(s => s.Region.toLowerCase().trim() === regionKey || s.Region.toLowerCase().trim() === "torres del paine");
+            const hasSpots = spotData.some(s => s.Region.toLowerCase().trim().includes(regionKey) || (regionKey.includes("paine") && s.Region.toLowerCase().includes("paine")));
             document.getElementById('btn-camera').classList.toggle('hidden', !hasSpots);
 
             const homeItem = items.find(i => i.Home && i.Home.trim() !== "");
@@ -171,26 +172,39 @@
             if (hasL) switchTab('logistik'); else if (hasA) switchTab('aktiv'); else switchTab('foto');
         }
 
+        // NEUES MAXIMIERTES SPOT-OVERLAY
         function openSpotOverlay() {
             const region = document.getElementById('display-region').innerText.toLowerCase().trim();
-            const spots = spotData.filter(s => s.Region.toLowerCase().trim() === region || (region.includes("paine") && s.Region.toLowerCase().includes("paine")));
+            const spots = spotData.filter(s => s.Region.toLowerCase().trim().includes(region) || (region.includes("paine") && s.Region.toLowerCase().includes("paine")));
             const slider = document.getElementById('spot-slider');
             slider.innerHTML = "";
-            document.getElementById('spot-overlay-title').innerText = region.toUpperCase() + " SPOTS";
 
             spots.forEach(spot => {
                 const card = document.createElement('div');
-                card.className = "min-w-[85vw] bg-white rounded-2xl overflow-hidden shadow-2xl snap-center flex flex-col h-[70vh]";
+                card.className = "min-w-full h-full snap-center relative overflow-hidden";
                 card.innerHTML = `
-                    <div class="h-1/2 bg-slate-200"><img src="${spot.Image}" class="w-full h-full object-cover"></div>
-                    <div class="p-5 flex flex-col justify-between flex-1">
-                        <div><h3 class="text-xl font-bold text-slate-800 leading-tight mb-2">${spot.Title}</h3><p class="text-sm text-slate-500 italic mb-4">"${spot.Details}"</p>
-                        <div class="grid grid-cols-2 gap-3 text-[10px] uppercase font-bold text-slate-400">
-                            <div class="bg-slate-50 p-2 rounded-lg">🕒 Licht: <span class="text-slate-800 block">${spot.Licht}</span></div>
-                            <div class="bg-slate-50 p-2 rounded-lg">📸 Linse: <span class="text-slate-800 block">${spot.Linse}</span></div>
-                        </div></div>
-                        <a href="${spot.Maps}" target="_blank" class="block w-full bg-orange-500 text-white text-center py-3 rounded-xl font-bold shadow-lg mt-4">📍 STANDORT ÖFFNEN</a>
-                    </div>`;
+                    <img src="${spot.Image}" class="absolute inset-0 w-full h-full object-cover">
+                    
+                    <!-- Top Info (Licht & Linse) -->
+                    <div class="absolute top-8 left-6 z-10 flex flex-col gap-2">
+                        <div class="bg-black/30 backdrop-blur-lg border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 shadow-2xl">
+                            <span>🕒</span> ${spot.Licht}
+                        </div>
+                        <div class="bg-black/30 backdrop-blur-lg border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] uppercase font-bold tracking-widest flex items-center gap-2 shadow-2xl">
+                            <span>📸</span> ${spot.Linse}
+                        </div>
+                    </div>
+
+                    <!-- Bottom Content (Titel & Details & Maps) -->
+                    <div class="absolute inset-x-0 bottom-0 spot-text-gradient p-8 pt-20 flex flex-col justify-end">
+                        <h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl">${spot.Title}</h3>
+                        <p class="text-white/80 text-sm leading-relaxed mb-6 font-medium italic drop-shadow-lg max-w-[90%] tracking-wide">"${spot.Details}"</p>
+                        
+                        <a href="${spot.Maps}" target="_blank" class="inline-flex items-center gap-2 text-white/90 font-black text-xs uppercase tracking-[0.3em] py-2 px-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 self-start active:bg-white/30 transition-all">
+                            <span>📍</span> Standort öffnen
+                        </a>
+                    </div>
+                `;
                 slider.appendChild(card);
             });
             document.getElementById('spot-overlay').classList.remove('hidden'); isPeeking = true;
