@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Meine Reise-App</title>
+    <title>Südamerika Reise 2024</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,52 +13,60 @@
         .hidden { display: none; }
         .indicator-dot { height: 7px; width: 7px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
         .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
-        .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); }
-        img { transition: opacity 0.5s ease-in-out; }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%); }
+        #hero-img { transition: opacity 0.5s ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
     <!-- Header & Hero Image -->
-    <header class="relative bg-blue-900 text-white overflow-hidden shadow-lg h-52">
+    <header class="relative bg-slate-900 text-white overflow-hidden shadow-lg h-64">
         <div id="hero-img-container" class="absolute inset-0 bg-slate-800">
-            <img id="hero-img" src="" alt="Region" class="w-full h-full object-cover opacity-70">
+            <img id="hero-img" src="" alt="Region" class="w-full h-full object-cover opacity-80">
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
         
+        <!-- Top Nav -->
         <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10">
-            <button onclick="changeDay(-1)" class="bg-black/30 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90">◀</button>
+            <button onclick="changeDay(-1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10 text-white">◀</button>
             <div class="text-center">
-                <div id="display-region" class="text-[10px] uppercase tracking-[0.2em] text-white/90 font-bold drop-shadow-md">Region</div>
-                <h1 id="display-day" class="text-xl font-bold italic text-white drop-shadow-md">Tag -</h1>
+                <div id="display-region" class="text-[10px] uppercase tracking-[0.2em] text-blue-300 font-bold drop-shadow-md">Region</div>
+                <h1 id="display-day" class="text-xl font-bold italic text-white drop-shadow-md tracking-tight">Tag -</h1>
             </div>
-            <button onclick="changeDay(1)" class="bg-black/30 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90">▶</button>
+            <button onclick="changeDay(1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10 text-white">▶</button>
         </div>
 
-        <div class="absolute bottom-4 left-0 w-full px-5 flex justify-between items-end z-10">
-            <p id="display-date" class="text-xl font-bold drop-shadow-lg">--. --</p>
-            <div class="flex space-x-3 text-[11px] font-mono bg-black/40 px-2 py-1 rounded backdrop-blur-sm border border-white/10">
+        <!-- Bottom Info -->
+        <div class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end z-10">
+            <div>
+                <p id="display-date" class="text-3xl font-black drop-shadow-lg leading-none">--. --</p>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-white/50 mt-2 font-light">Patagonien & Atacama</p>
+            </div>
+            <div class="flex space-x-3 text-[11px] font-mono bg-black/60 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10 shadow-xl">
                 <span>🌅 <span id="sunrise">--:--</span></span>
                 <span>🌇 <span id="sunset">--:--</span></span>
             </div>
         </div>
     </header>
 
-    <!-- Navigation -->
-    <nav class="bg-white flex justify-around shadow-sm sticky top-0 z-20 border-b">
-        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
+    <!-- Navigation Tab Bar -->
+    <nav class="bg-white flex justify-around shadow-md sticky top-0 z-20 border-b border-slate-200">
+        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">
             Logistik<span id="dot-logistik" class="indicator-dot hidden"></span>
         </button>
-        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
+        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">
             Aktivität<span id="dot-aktiv" class="indicator-dot hidden"></span>
         </button>
-        <button onclick="switchTab('foto')" id="btn-foto" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
-            Foto/Info<span id="dot-foto" class="indicator-dot hidden"></span>
+        <button onclick="switchTab('foto')" id="btn-foto" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">
+            Wichtig<span id="dot-foto" class="indicator-dot hidden"></span>
         </button>
     </nav>
 
     <main class="p-4 max-w-md mx-auto">
-        <div id="day-alerts" class="space-y-3 mb-6"></div>
+        <!-- TAGES ALERTS -->
+        <div id="day-alerts" class="space-y-3 mb-5"></div>
+
+        <!-- SEKTIONEN -->
         <div id="sec-logistik" class="space-y-4"></div>
         <div id="sec-aktiv" class="hidden space-y-4"></div>
         <div id="sec-foto" class="hidden space-y-4"></div>
@@ -75,16 +83,15 @@
             "Fotospot": "📸", "Restaurant": "🍽️"
         };
 
-        // Bilder-Datenbank basierend auf deiner Liste
+        // BILDER-DATENBANK - EXAKT AUF DEINE NAMEN ABGESTIMMT
         const regionImages = {
-            "Torre Del Paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
-            "Torres del Paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
-            "Santiago": "https://images.unsplash.com/photo-1590059530472-841f4d0c9201?auto=format&fit=crop&w=800&q=80",
-            "San Pedro de Atacama": "https://images.unsplash.com/photo-1447015237013-0e80b2786ddc?auto=format&fit=crop&w=800&q=80",
-            "Matanzas / Pazifik": "https://images.unsplash.com/photo-1596303254341-a67b43a9ccb4?auto=format&fit=crop&w=800&q=80",
-            "Matanzas / Santiago": "https://images.unsplash.com/photo-1490782300182-697b80ad4293?auto=format&fit=crop&w=800&q=80",
             "Buenos Aires": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=800&q=80",
-            "El Calafate": "https://images.unsplash.com/photo-1516901632977-d141a38d4f9e?auto=format&fit=crop&w=800&q=80",
+            "El Calafate Argentinien": "https://images.unsplash.com/photo-1516901632977-d141a38d4f9e?auto=format&fit=crop&w=800&q=80",
+            "Torre Del Paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
+            "Santiago de Chile": "https://images.unsplash.com/photo-1590059530472-841f4d0c9201?auto=format&fit=crop&w=800&q=80",
+            "San Pedro de Atacama": "https://images.unsplash.com/photo-1447015237013-0e80b2786ddc?auto=format&fit=crop&w=800&q=80",
+            "Matanzas": "https://images.unsplash.com/photo-1621509378978-7576f300c196?auto=format&fit=crop&w=800&q=80",
+            "München": "https://images.unsplash.com/photo-1595841055318-5a3f93b1e773?auto=format&fit=crop&w=800&q=80",
             "Default": "https://images.unsplash.com/photo-1476451042684-979465856389?auto=format&fit=crop&w=800&q=80"
         };
 
@@ -100,9 +107,12 @@
 
         function processData() {
             days = [...new Set(tripData.map(item => parseInt(item["Tag#"])))].sort((a, b) => a - b);
+            
+            // Finde heutigen Tag basierend auf Datum in CSV (z.B. "15. Okt")
             const now = new Date();
             const months = {"Jan":0, "Feb":1, "Mär":2, "Apr":3, "Mai":4, "Jun":5, "Jul":6, "Aug":7, "Sep":8, "Okt":9, "Nov":10, "Dez":11};
             let todayTag = days[0];
+            
             tripData.forEach(item => {
                 if(!item.Datum) return;
                 const parts = item.Datum.split(". ");
@@ -112,6 +122,7 @@
                     if(now.getDate() === d && now.getMonth() === m) todayTag = parseInt(item["Tag#"]);
                 }
             });
+            
             currentDayIndex = days.indexOf(todayTag);
             if(currentDayIndex === -1) currentDayIndex = 0;
             render();
@@ -124,21 +135,23 @@
             
             const region = items[0].Region;
             
+            // Header Infos
             document.getElementById('display-day').innerText = "Tag " + currentTagNum;
             document.getElementById('display-date').innerText = items[0].Datum;
             document.getElementById('display-region').innerText = region;
             document.getElementById('sunrise').innerText = items[0].Sunrise || "--:--";
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
 
-            // Bild-Update
+            // Hintergrundbild setzen
             const imgUrl = regionImages[region] || regionImages["Default"];
             document.getElementById('hero-img').src = imgUrl;
 
-            // Indikatoren (Punkte)
+            // Navigations-Indikatoren (Punkte)
             document.getElementById('dot-logistik').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert'));
             document.getElementById('dot-aktiv').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Aktivität'));
             document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv));
 
+            // Sektionen leeren
             document.getElementById('day-alerts').innerHTML = "";
             document.getElementById('sec-logistik').innerHTML = "";
             document.getElementById('sec-aktiv').innerHTML = "";
@@ -146,10 +159,25 @@
 
             items.forEach(item => {
                 const icon = icons[item.Typ] || "📍";
-                if (item.Typ === "Alert") document.getElementById('day-alerts').appendChild(createAlertCard(item));
-                if (item.Kategorie === "Logistik" && item.Typ !== "Alert") document.getElementById('sec-logistik').appendChild(createCard(item, icon));
-                else if (item.Kategorie === "Aktivität") document.getElementById('sec-aktiv').appendChild(createCard(item, icon));
-                if (item.Risiko || item["Shot idea"] || item.Objektiv) document.getElementById('sec-foto').appendChild(createInfoCard(item));
+                
+                // Alerts/Risiken
+                if (item.Typ === "Alert") {
+                    document.getElementById('day-alerts').appendChild(createAlertCard(item));
+                }
+
+                // Logistik (Flug, Hotel, Taxi...)
+                if (item.Kategorie === "Logistik" && item.Typ !== "Alert") {
+                    document.getElementById('sec-logistik').appendChild(createCard(item, icon));
+                } 
+                // Aktivitäten (Hiking, Fotospot...)
+                else if (item.Kategorie === "Aktivität") {
+                    document.getElementById('sec-aktiv').appendChild(createCard(item, icon));
+                }
+
+                // Foto & Risiko-Details
+                if (item.Risiko || item["Shot idea"] || item.Objektiv) {
+                    document.getElementById('sec-foto').appendChild(createInfoCard(item));
+                }
             });
             switchTab('logistik'); 
         }
@@ -159,8 +187,8 @@
             div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-3";
             div.innerHTML = `
                 <div class="flex justify-between items-start">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">${icon}</span>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-3xl">${icon}</div>
                         <div>
                             <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">${item.Typ}</span>
                             <h3 class="font-bold text-slate-800 leading-tight">${item.Titel}</h3>
@@ -168,33 +196,34 @@
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-blue-900 text-sm">${item.Startzeit || ''}</p>
+                        <p class="text-[9px] text-slate-400 mt-0.5">${item.Dauer || ''}</p>
                     </div>
                 </div>
-                ${item.Details ? `<p class="text-xs text-slate-500 mt-2 ml-9 leading-relaxed">${item.Details}</p>` : ''}
-                <div class="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center ml-9">
-                    <span class="text-[10px] font-mono text-slate-400 truncate max-w-[120px]">${item["Booking Code"] || item.Anbieter || ''}</span>
-                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm">📍 MAPS</a>` : ''}
+                ${item.Details ? `<p class="text-xs text-slate-500 mt-3 ml-12 leading-relaxed italic border-l-2 border-slate-100 pl-3">${item.Details}</p>` : ''}
+                <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center ml-12">
+                    <span class="text-[10px] font-mono text-slate-400 truncate max-w-[130px] uppercase">${item["Booking Code"] || item.Anbieter || ''}</span>
+                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold shadow-md active:scale-95 transition-transform">📍 MAPS</a>` : ''}
                 </div>`;
             return div;
         }
 
         function createAlertCard(item) {
             const div = document.createElement('div');
-            div.className = "alert-card p-3 rounded-r-xl shadow-sm mb-2";
-            div.innerHTML = `<h3 class="font-bold text-red-800 text-[11px] uppercase tracking-tighter">⚠️ ${item.Titel} ${item.Risiko ? ': ' + item.Risiko : ''}</h3>`;
+            div.className = "alert-card p-4 rounded-r-xl shadow-sm mb-2";
+            div.innerHTML = `<h3 class="font-bold text-red-800 text-[11px] uppercase tracking-tight">⚠️ ${item.Titel} ${item.Risiko ? ': ' + item.Risiko : ''}</h3>`;
             return div;
         }
 
         function createInfoCard(item) {
             const div = document.createElement('div');
-            div.className = "bg-slate-800 text-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500 mb-3";
+            div.className = "bg-slate-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-orange-500 mb-3";
             div.innerHTML = `
                 <h3 class="font-bold text-orange-400 text-[10px] mb-2 uppercase tracking-widest">${item.Titel}</h3>
-                ${item.Risiko ? `<p class="text-xs text-red-300 mb-2 font-bold leading-tight">⚠️ ${item.Risiko}</p>` : ''}
-                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300 leading-snug">"📸 ${item["Shot idea"]}"</p>` : ''}
-                <div class="grid grid-cols-2 gap-2 mt-3 text-[9px]">
-                    ${item.Objektiv ? `<div class="bg-slate-700 p-2 rounded"><strong>Linse:</strong><br>${item.Objektiv}</div>` : ''}
-                    ${item["Bestes Licht"] ? `<div class="bg-slate-700 p-2 rounded"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>` : ''}
+                ${item.Risiko ? `<p class="text-sm text-red-300 mb-3 font-bold leading-tight">⚠️ ${item.Risiko}</p>` : ''}
+                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300 leading-relaxed">"📸 ${item["Shot idea"]}"</p>` : ''}
+                <div class="grid grid-cols-2 gap-3 mt-4 text-[9px]">
+                    ${item.Objektiv ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Linse:</strong><br>${item.Objektiv}</div>` : ''}
+                    ${item["Bestes Licht"] ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>` : ''}
                 </div>`;
             return div;
         }
@@ -214,8 +243,13 @@
             }
         }
 
+        // Start
         loadCSV();
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
+        // Service Worker für Offline
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('sw.js'); 
+        }
     </script>
 </body>
 </html>
