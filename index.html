@@ -109,13 +109,10 @@
             });
         }
 
-        // Hilfsfunktion zur Zeit-Umwandlung für Sortierung
         function timeToMinutes(timeStr) {
             if (!timeStr || timeStr.trim() === "" || !timeStr.includes(':')) return 9999;
             const parts = timeStr.split(':');
-            const hours = parseInt(parts[0], 10);
-            const minutes = parseInt(parts[1], 10);
-            return (hours * 60) + minutes;
+            return (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
         }
 
         function processData() {
@@ -142,7 +139,6 @@
             const items = tripData.filter(i => parseInt(i["Tag#"]) === currentTagNum);
             if (items.length === 0) return;
 
-            // NEU: Einträge nach Uhrzeit sortieren (Aufsteigend)
             items.sort((a, b) => timeToMinutes(a.Startzeit) - timeToMinutes(b.Startzeit));
             
             const rawRegion = items[0].Region || "Default";
@@ -155,7 +151,6 @@
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
             document.getElementById('hero-img').src = regionImages[regionKey] || regionImages["default"];
 
-            // Unterkunft Logik
             const homeItem = items.find(i => i.Home && i.Home.trim() !== "");
             const homePreview = document.getElementById('home-preview');
             const homeImg = document.getElementById('home-img');
@@ -175,9 +170,13 @@
             } else { homePreview.classList.add('hidden'); }
 
             // Indikatoren
-            document.getElementById('dot-logistik').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert'));
-            document.getElementById('dot-aktiv').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Aktivität'));
-            document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv || i.Wichtig));
+            const hasLogistik = items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert');
+            const hasAktiv = items.some(i => i.Kategorie === 'Aktivität');
+            const hasFoto = items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv || i.Wichtig);
+
+            document.getElementById('dot-logistik').classList.toggle('hidden', !hasLogistik);
+            document.getElementById('dot-aktiv').classList.toggle('hidden', !hasAktiv);
+            document.getElementById('dot-foto').classList.toggle('hidden', !hasFoto);
 
             document.getElementById('day-alerts').innerHTML = "";
             document.getElementById('sec-logistik').innerHTML = "";
@@ -191,7 +190,15 @@
                 else if (item.Kategorie === "Aktivität") document.getElementById('sec-aktiv').appendChild(createCard(item, icon));
                 if (item.Risiko || item["Shot idea"] || item.Objektiv || item.Wichtig) document.getElementById('sec-foto').appendChild(createInfoCard(item));
             });
-            switchTab('logistik'); 
+
+            // SMART TAB LOGIK: Automatisch zum Tab mit Inhalt springen
+            if (hasLogistik) {
+                switchTab('logistik');
+            } else if (hasAktiv) {
+                switchTab('aktiv');
+            } else {
+                switchTab('foto');
+            }
         }
 
         function createCard(item, icon) {
@@ -261,23 +268,13 @@
         }
 
         // SWIPE LOGIK
-        let startX = 0;
-        let startY = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-        }, { passive: true });
-
+        let startX = 0, startY = 0;
+        document.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
         document.addEventListener('touchend', (e) => {
             if (isPeeking) return;
-            let endX = e.changedTouches[0].clientX;
-            let endY = e.changedTouches[0].clientY;
-            let diffX = startX - endX;
-            let diffY = startY - endY;
+            let diffX = startX - e.changedTouches[0].clientX, diffY = startY - e.changedTouches[0].clientY;
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 70) {
-                if (diffX > 0) changeDay(1);
-                else changeDay(-1);
+                if (diffX > 0) changeDay(1); else changeDay(-1);
             }
         }, { passive: true });
 
