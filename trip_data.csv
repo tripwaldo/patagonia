@@ -1,0 +1,12 @@
+﻿Tag#;Datum;Region;Kategorie;Typ;Titel;Details;Status;Startzeit;Endzeit;Dauer;Booking Code;Anbieter;Stornofrist; Kosten ;Stress Level;Risiko;Sunrise;Sunset;Maps
+1;15. Okt;Buenos Aires;Logistik;Flug;Flug MUC-MAD-Buenos Aires;;OK;07:30;19:55;17:00;;Iberia;14. Okt; 574,00 € ;mid;;;;https://www.google.com/maps/dir/Munich+International+Airport,+Nordallee+25,+85356+Oberding/Santiago,+Santiago+Metropolitan+Region,+Chile/@5.5765176,-33.6337399,4z/data=!4m14!4m13!1m5!1m1!1s0x479e135923da6d45:0xe3c57a853a56cf4b!2m2!1d11.7831852!2d48.3536407!1m5!1m1!1s0x9662c5410425af2f:0x8475d53c400f0931!2m2!1d-70.6692655!2d-33.4488897!3e4?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D
+1;15. Okt;Buenos Aires;Logistik;Alert;Flug MUC-MAD-Buenos Aires;;;;;;;;;;;1h55 Connection in MAD;;;
+1;15. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;low;;;;
+2;16. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;;;;;
+3;17. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;;;;;
+4;18. Okt;El Calafate;Logistik;Taxi;zu AEP Airport;;OK;09:20;12:40;03:20;;Aerolinas Argentiinas;17. Okt; 400,00 € ;mid;Wetter/Storno;06:39;20:30;https://maps.app.goo.gl/DSsz7DiwXGqgqmnG6
+4;18. Okt;El Calafate;Logistik;Flug;Flug - AEP-FTE (El Calafate);;OK;09:20;12:40;03:20;;Aerolinas Argentiinas;17. Okt; 400,00 € ;mid;Wetter/Storno;06:39;20:30;https://www.google.com/maps/dir/Aeroparque+Internacional+Jorge+Newbery,+Av.+Costanera+Rafael+Obligado+s%2Fn,+C1425+Cdad.+Aut%C3%B3noma+de+Buenos+Aires,+Argentina/Aeropuerto+Internacional+Comandante+Armando+Tola+de+El+Calafate,+Estancia+Quien+Sabe,+Santa+Cruz,+Argentina/@-41.9347251,-75.7920493,5z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x95bcb5a7f531c7b5:0xfdd992892f9ccadb!2m2!1d-58.4156511!2d-34.5590184!1m5!1m1!1s0xbdbb9f5e2caeee93:0x6ba235b70aaa63e9!2m2!1d-72.0536694!2d-50.2838909!3e4?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D
+4;18. Okt;El Calafate;Logistik;Taxi;Taxi zu Airbnb;flexibel;OK;;;00:20;;;; 40,00 € ;low;;;;
+4;18. Okt;El Calafate;Logistik;Hotel;Airbnb;;OK;15:00;;;;Airbnb;17. Okt; 203,00 € ;low;;;;
+5;19. Okt;El Calafate;Aktivität;Ausflug;Fahrt zu Perito Morena Pier;;OK;08:00;09:00;01:00;;;;;;;;;https://maps.app.goo.gl/DSsz7DiwXGqgqmnG6
+5;19. Okt;El Calafate;Aktivität;Ausflug;Gletscher Hiking Perito Morena;;OK;10:00;15:00;05:00;;Hierlo & Aventura;18. Okt; 400,00 € ;;;;;
