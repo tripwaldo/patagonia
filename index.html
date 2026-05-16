@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Patagonien Trip</title>
+    <title>Patagonien Reise</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,31 +11,40 @@
     <style>
         .tab-active { border-bottom: 4px solid #3b82f6; color: #1e3a8a; font-weight: bold; }
         .hidden { display: none; }
-        .indicator-dot { height: 8px; width: 8px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
+        .indicator-dot { height: 7px; width: 7px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
         .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%); }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
-    <!-- Header -->
-    <header class="bg-blue-900 text-white p-4 sticky top-0 z-20 shadow-lg">
-        <div class="flex justify-between items-center max-w-md mx-auto">
-            <button onclick="changeDay(-1)" class="text-2xl px-4 active:scale-90">◀</button>
-            <div class="text-center">
-                <div id="display-region" class="text-[10px] uppercase tracking-widest opacity-70">Region</div>
-                <h1 id="display-day" class="text-xl font-bold italic text-blue-200">Lade...</h1>
-                <p id="display-date" class="text-sm opacity-90 font-medium">--. --</p>
-            </div>
-            <button onclick="changeDay(1)" class="text-2xl px-4 active:scale-90">▶</button>
+    <!-- Header & Hero Image -->
+    <header class="relative bg-blue-900 text-white overflow-hidden shadow-lg">
+        <div id="hero-img-container" class="h-48 w-full relative bg-slate-800">
+            <img id="hero-img" src="" alt="Region" class="w-full h-full object-cover opacity-80 transition-opacity duration-500">
+            <div class="absolute inset-0 hero-gradient"></div>
         </div>
-        <div class="flex justify-around mt-3 max-w-sm mx-auto text-xs border-t border-blue-800 pt-2 font-mono">
-            <span>🌅 <span id="sunrise">--:--</span></span>
-            <span>🌇 <span id="sunset">--:--</span></span>
+        
+        <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10">
+            <button onclick="changeDay(-1)" class="bg-black/30 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 transition-transform">◀</button>
+            <div class="text-center shadow-sm">
+                <div id="display-region" class="text-[10px] uppercase tracking-widest text-white/80 font-bold">Region</div>
+                <h1 id="display-day" class="text-xl font-bold italic text-white">Tag -</h1>
+            </div>
+            <button onclick="changeDay(1)" class="bg-black/30 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 transition-transform">▶</button>
+        </div>
+
+        <div class="absolute bottom-4 left-0 w-full px-4 flex justify-between items-end z-10">
+            <p id="display-date" class="text-lg font-bold">--. --</p>
+            <div class="flex space-x-3 text-[10px] font-mono bg-black/20 p-1 rounded backdrop-blur-sm">
+                <span>🌅 <span id="sunrise">--:--</span></span>
+                <span>🌇 <span id="sunset">--:--</span></span>
+            </div>
         </div>
     </header>
 
-    <!-- Navigation mit Indikatoren -->
-    <nav class="bg-white flex justify-around shadow-sm sticky top-[104px] z-10 border-b">
+    <!-- Navigation -->
+    <nav class="bg-white flex justify-around shadow-sm sticky top-0 z-20 border-b">
         <button onclick="switchTab('logistik')" id="btn-logistik" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
             Logistik<span id="dot-logistik" class="indicator-dot hidden"></span>
         </button>
@@ -48,9 +57,7 @@
     </nav>
 
     <main class="p-4 max-w-md mx-auto">
-        <!-- ALERT SEKTION -->
         <div id="day-alerts" class="space-y-3 mb-6"></div>
-
         <div id="sec-logistik" class="space-y-4"></div>
         <div id="sec-aktiv" class="hidden space-y-4"></div>
         <div id="sec-foto" class="hidden space-y-4"></div>
@@ -67,155 +74,24 @@
             "Fotospot": "📸", "Restaurant": "🍽️"
         };
 
+        // Bilder-Datenbank (Region zu Unsplash URL)
+        const regionImages = {
+            "Buenos Aires": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=800&q=80",
+            "El Calafate": "https://images.unsplash.com/photo-1516901632977-d141a38d4f9e?auto=format&fit=crop&w=800&q=80",
+            "El Chaltén": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
+            "Ushuaia": "https://images.unsplash.com/photo-1563294373-108709320215?auto=format&fit=crop&w=800&q=80",
+            "Torres del Paine": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=800&q=80",
+            "Puerto Natales": "https://images.unsplash.com/photo-1510444315264-5a2108168233?auto=format&fit=crop&w=800&q=80",
+            "Bariloche": "https://images.unsplash.com/photo-1605333333333-333333333333?auto=format&fit=crop&w=800&q=80",
+            "Default": "https://images.unsplash.com/photo-1476451042684-979465856389?auto=format&fit=crop&w=800&q=80"
+        };
+
         function loadCSV() {
             Papa.parse("trip_data.csv", {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     tripData = results.data;
                     processData();
                 }
             });
         }
-
-        function processData() {
-            days = [...new Set(tripData.map(item => parseInt(item["Tag#"])))].sort((a, b) => a - b);
-            
-            // Heute finden
-            const now = new Date();
-            const months = {"Jan":0, "Feb":1, "Mär":2, "Apr":3, "Mai":4, "Jun":5, "Jul":6, "Aug":7, "Sep":8, "Okt":9, "Nov":10, "Dez":11};
-            let todayTag = days[0];
-            tripData.forEach(item => {
-                const parts = item.Datum.split(". ");
-                if(parts.length === 2) {
-                    const d = parseInt(parts[0]);
-                    const m = months[parts[1]];
-                    if(now.getDate() === d && now.getMonth() === m) todayTag = parseInt(item["Tag#"]);
-                }
-            });
-
-            currentDayIndex = days.indexOf(todayTag);
-            if(currentDayIndex === -1) currentDayIndex = 0;
-            
-            render();
-        }
-
-        function render() {
-            const currentTagNum = days[currentDayIndex];
-            const items = tripData.filter(i => parseInt(i["Tag#"]) === currentTagNum);
-            
-            // Header
-            document.getElementById('display-day').innerText = "Tag " + currentTagNum;
-            document.getElementById('display-date').innerText = items[0].Datum;
-            document.getElementById('display-region').innerText = items[0].Region;
-            document.getElementById('sunrise').innerText = items[0].Sunrise || "--:--";
-            document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
-
-            // Menü-Indikatoren setzen
-            document.getElementById('dot-logistik').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert'));
-            document.getElementById('dot-aktiv').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Aktivität'));
-            document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv));
-
-            // Sektionen leeren
-            document.getElementById('day-alerts').innerHTML = "";
-            document.getElementById('sec-logistik').innerHTML = "";
-            document.getElementById('sec-aktiv').innerHTML = "";
-            document.getElementById('sec-foto').innerHTML = "";
-
-            items.forEach(item => {
-                const icon = icons[item.Typ] || "📍";
-                const card = createCard(item, icon);
-
-                if (item.Typ === "Alert") {
-                    document.getElementById('day-alerts').appendChild(createAlertCard(item));
-                }
-
-                if (item.Kategorie === "Logistik" && item.Typ !== "Alert") {
-                    document.getElementById('sec-logistik').appendChild(card);
-                } else if (item.Kategorie === "Aktivität") {
-                    document.getElementById('sec-aktiv').appendChild(card);
-                }
-
-                if (item.Risiko || item["Shot idea"] || item.Objektiv) {
-                    document.getElementById('sec-foto').appendChild(createInfoCard(item));
-                }
-            });
-
-            // Aktiven Tab hervorheben
-            switchTab('logistik'); 
-        }
-
-        function createCard(item, icon) {
-            const div = document.createElement('div');
-            div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-3";
-            div.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">${icon}</span>
-                        <div>
-                            <span class="text-[10px] text-slate-400 uppercase font-bold">${item.Typ}</span>
-                            <h3 class="font-bold text-slate-800 leading-tight">${item.Titel}</h3>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-blue-900">${item.Startzeit || ''}</p>
-                        <p class="text-[10px] text-slate-400 italic">${item.Dauer || ''}</p>
-                    </div>
-                </div>
-                ${item.Details ? `<p class="text-sm text-slate-500 mt-2 ml-9">${item.Details}</p>` : ''}
-                <div class="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center ml-9">
-                    <span class="text-[10px] font-mono text-slate-400 truncate max-w-[150px]">${item["Booking Code"] || item.Anbieter || ''}</span>
-                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold">📍 MAPS</a>` : ''}
-                </div>
-            `;
-            return div;
-        }
-
-        function createAlertCard(item) {
-            const div = document.createElement('div');
-            div.className = "alert-card p-3 rounded-r-xl shadow-sm mb-2";
-            div.innerHTML = `
-                <div class="flex items-start space-x-2">
-                    <span class="mt-0.5 text-xs">⚠️</span>
-                    <h3 class="font-bold text-red-800 text-xs uppercase tracking-tighter leading-tight">${item.Titel} ${item.Risiko ? ': ' + item.Risiko : ''}</h3>
-                </div>
-            `;
-            return div;
-        }
-
-        function createInfoCard(item) {
-            const div = document.createElement('div');
-            div.className = "bg-slate-800 text-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500 mb-3";
-            div.innerHTML = `
-                <h3 class="font-bold text-orange-400 text-[10px] mb-2 uppercase tracking-widest">${item.Titel}</h3>
-                ${item.Risiko ? `<p class="text-sm text-red-300 mb-2 font-bold leading-tight">⚠️ ${item.Risiko}</p>` : ''}
-                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300 leading-snug">"📸 ${item["Shot idea"]}"</p>` : ''}
-                <div class="grid grid-cols-2 gap-2 mt-3 text-[9px]">
-                    ${item.Objektiv ? `<div class="bg-slate-700 p-2 rounded"><strong>Linse:</strong><br>${item.Objektiv}</div>` : ''}
-                    ${item["Bestes Licht"] ? `<div class="bg-slate-700 p-2 rounded"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>` : ''}
-                </div>
-            `;
-            return div;
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('btn-' + tab).classList.add('tab-active');
-            document.querySelectorAll('main > div:not(#day-alerts)').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-' + tab).classList.remove('hidden');
-        }
-
-        function changeDay(delta) {
-            if (days[currentDayIndex + delta]) {
-                currentDayIndex += delta;
-                render();
-                window.scrollTo(0,0);
-            }
-        }
-
-        loadCSV();
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-    </script>
-</body>
-</html>
