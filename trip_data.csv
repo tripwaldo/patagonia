@@ -1,33 +1,33 @@
 ﻿Tag#;Datum;Region;Kategorie;Typ;Titel;Details;Status;Startzeit;Endzeit;Dauer;Booking Code;Anbieter;Stornofrist; Kosten ;Stress Level;Risiko;Sunrise;Sunset;Maps
-1;15. Okt;Buenos Aires;Logistik;Flug;Flug MUC-MAD-Buenos Aires;;OK;07:30;19:55;17:00;;Iberia;14. Okt; 574,00 € ;mid;;;;https://www.google.com/maps/dir/Munich+International+Airport,+Nordallee+25,+85356+Oberding/Santiago,+Santiago+Metropolitan+Region,+Chile/@5.5765176,-33.6337399,4z/data=!4m14!4m13!1m5!1m1!1s0x479e135923da6d45:0xe3c57a853a56cf4b!2m2!1d11.7831852!2d48.3536407!1m5!1m1!1s0x9662c5410425af2f:0x8475d53c400f0931!2m2!1d-70.6692655!2d-33.4488897!3e4?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D
-1;15. Okt;Buenos Aires;Logistik;Alert;Flug MUC-MAD-Buenos Aires;;;;;;;;;;;1h55 Connection in MAD;;;
-1;15. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;low;;;;
-2;16. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;;;;;
-3;17. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;;;;;
+1;15. Okt;Buenos Aires;Logistik;Flug;Flug MUC-MAD-Buenos Aires;;OK;07:30;19:55;17:00;;Iberia;14. Okt; 574,00 € ;mid;;06:11;19:08;https://www.google.com/maps/dir/Munich+International+Airport,+Nordallee+25,+85356+Oberding/Santiago,+Santiago+Metropolitan+Region,+Chile/@5.5765176,-33.6337399,4z/data=!4m14!4m13!1m5!1m1!1s0x479e135923da6d45:0xe3c57a853a56cf4b!2m2!1d11.7831852!2d48.3536407!1m5!1m1!1s0x9662c5410425af2f:0x8475d53c400f0931!2m2!1d-70.6692655!2d-33.4488897!3e4?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D
+1;15. Okt;Buenos Aires;Logistik;Alert;Flug MUC-MAD-Buenos Aires;;;;;;;;;;;1h55 Connection in MAD;06:11;19:08;
+1;15. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;low;;06:11;19:08;
+2;16. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;;;06:11;19:08;
+3;17. Okt;Buenos Aires;Logistik;Hotel;Airbnb;noch buchen;open;;;;;Airbnb;14. Okt;;;;06:11;19:08;
 4;18. Okt;El Calafate;Logistik;Taxi;zu AEP Airport;;OK;09:20;12:40;03:20;;Aerolinas Argentiinas;17. Okt; 400,00 € ;mid;Wetter/Storno;06:39;20:30;https://maps.app.goo.gl/DSsz7DiwXGqgqmnG6
 4;18. Okt;El Calafate;Logistik;Flug;Flug - AEP-FTE (El Calafate);;OK;09:20;12:40;03:20;;Aerolinas Argentiinas;17. Okt; 400,00 € ;mid;Wetter/Storno;06:39;20:30;https://www.google.com/maps/dir/Aeroparque+Internacional+Jorge+Newbery,+Av.+Costanera+Rafael+Obligado+s%2Fn,+C1425+Cdad.+Aut%C3%B3noma+de+Buenos+Aires,+Argentina/Aeropuerto+Internacional+Comandante+Armando+Tola+de+El+Calafate,+Estancia+Quien+Sabe,+Santa+Cruz,+Argentina/@-41.9347251,-75.7920493,5z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x95bcb5a7f531c7b5:0xfdd992892f9ccadb!2m2!1d-58.4156511!2d-34.5590184!1m5!1m1!1s0xbdbb9f5e2caeee93:0x6ba235b70aaa63e9!2m2!1d-72.0536694!2d-50.2838909!3e4?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D
 4;18. Okt;El Calafate;Logistik;Taxi;Taxi zu Airbnb;flexibel;OK;13:30;;00:20;;;; 40,00 € ;low;;06:39;20:30;
 4;18. Okt;El Calafate;Logistik;Hotel;Airbnb;;OK;15:00;;;;Airbnb;17. Okt; 203,00 € ;low;;06:39;20:30;
 5;19. Okt;El Calafate;Aktivität;Ausflug;Fahrt zu Perito Morena Pier;;OK;08:00;09:00;01:00;;;;;;;06:39;20:30;https://maps.app.goo.gl/DSsz7DiwXGqgqmnG6
 5;19. Okt;El Calafate;Aktivität;Ausflug;Gletscher Hiking Perito Morena;;OK;10:00;15:00;05:00;;Hierlo & Aventura;18. Okt; 400,00 € ;;;06:39;20:30;
-6;20. Okt;El Calafate;Aktivität;Ausflug;;;;;;;;;;;;;;;
-7;21. Okt;Torre Del Paine;Logistik;Taxi;Taxi zu Busbahnhof;noch buchen;;;;;;;;;;;;;
+6;20. Okt;El Calafate;Aktivität;Ausflug;;;;;;;;;;;;;06:39;20:30;
+7;21. Okt;Torre Del Paine;Logistik;Taxi;Taxi zu Busbahnhof;noch buchen;;06:45;;00:10;;;;;;;06:39;20:30;
 7;21. Okt;Torre Del Paine;Logistik;Bus;Fahrt nach Puerto Natales;noch buchen;open;08:00;14:00;06:00;;;; 55,00 € ;;;06:38;20:39;
-8;22. Okt;Torre Del Paine;;;;;;;;;;;;;;;;;
-9;23. Okt;Torre Del Paine;;;;;;;;;;;;;;;;;
-10;24. Okt;Torre Del Paine;;;;;;;;;;;;;;;;;
-11;25. Okt;Torre Del Paine;;;;;;;;;;;;;;;;;
+8;22. Okt;Torre Del Paine;;;;;;;;;;;;;;;06:38;20:39;
+9;23. Okt;Torre Del Paine;;;;;;;;;;;;;;;06:38;20:39;
+10;24. Okt;Torre Del Paine;;;;;;;;;;;;;;;06:38;20:39;
+11;25. Okt;Torre Del Paine;;;;;;;;;;;;;;;06:38;20:39;
 12;26. Okt;Santiago;;;;;;;;;;;;;;;06:54;20:01;
-13;27. Okt;Santiago;;;;;;;;;;;;;;;;;
+13;27. Okt;Santiago;;;;;;;;;;;;;;;06:54;20:01;
 14;28. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;06:50;19:43;
-15;29. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;;;
-16;30. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;;;
-17;31. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;;;
-18;01. Nov;San Pedro de Atacama;;;;;;;;;;;;;;;;;
-19;02. Nov;San Pedro de Atacama;;;;;;;;;;;;;;;;;
-20;03. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;;;
-21;04. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;;;
-22;05. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;;;
-23;06. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;;;
-24;07. Nov;Matanzas / Santiago;;;;;;;;;;;;;;;;;
-25;08. Nov;Heimflug;;;;;;;;;;;;;;;;;
+15;29. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;06:50;19:43;
+16;30. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;06:50;19:43;
+17;31. Okt;San Pedro de Atacama;;;;;;;;;;;;;;;06:50;19:43;
+18;01. Nov;San Pedro de Atacama;;;;;;;;;;;;;;;06:50;19:43;
+19;02. Nov;San Pedro de Atacama;;;;;;;;;;;;;;;06:50;19:43;
+20;03. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;06:45;20:15;
+21;04. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;06:45;20:15;
+22;05. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;06:45;20:15;
+23;06. Nov;Matanzas / Pazifik;;;;;;;;;;;;;;;06:45;20:15;
+24;07. Nov;Matanzas / Santiago;;;;;;;;;;;;;;;06:45;20:15;
+25;08. Nov;Heimflug;;;;;;;;;;;;;;;06:45;20:15;
