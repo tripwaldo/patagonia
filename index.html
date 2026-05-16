@@ -14,33 +14,30 @@
         .indicator-dot { height: 7px; width: 7px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
         .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
         .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%); }
-        #hero-img { transition: opacity 0.5s ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
-    <!-- Header & Hero Image -->
     <header class="relative bg-slate-900 text-white overflow-hidden shadow-lg h-64">
         <div id="hero-img-container" class="absolute inset-0 bg-slate-800">
-            <img id="hero-img" src="" alt="Region" class="w-full h-full object-cover opacity-80">
+            <!-- Hier ist der Bild-Tag -->
+            <img id="hero-img" src="https://images.unsplash.com/photo-1476451042684-979465856389?auto=format&fit=crop&w=800&q=80" alt="Region" class="w-full h-full object-cover opacity-80 transition-opacity duration-500">
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
         
-        <!-- Top Nav -->
         <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10">
             <button onclick="changeDay(-1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10 text-white">◀</button>
             <div class="text-center">
                 <div id="display-region" class="text-[10px] uppercase tracking-[0.2em] text-blue-300 font-bold drop-shadow-md">Region</div>
-                <h1 id="display-day" class="text-xl font-bold italic text-white drop-shadow-md tracking-tight">Tag -</h1>
+                <h1 id="display-day" class="text-xl font-bold italic text-white drop-shadow-md tracking-tight">Lade...</h1>
             </div>
             <button onclick="changeDay(1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10 text-white">▶</button>
         </div>
 
-        <!-- Bottom Info -->
         <div class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end z-10">
             <div>
                 <p id="display-date" class="text-3xl font-black drop-shadow-lg leading-none">--. --</p>
-                <p class="text-[10px] uppercase tracking-[0.3em] text-white/50 mt-2 font-light">Patagonien & Atacama</p>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-white/50 mt-2 font-light italic">Patagonien & Atacama</p>
             </div>
             <div class="flex space-x-3 text-[11px] font-mono bg-black/60 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10 shadow-xl">
                 <span>🌅 <span id="sunrise">--:--</span></span>
@@ -49,24 +46,14 @@
         </div>
     </header>
 
-    <!-- Navigation Tab Bar -->
-    <nav class="bg-white flex justify-around shadow-md sticky top-0 z-20 border-b border-slate-200">
-        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">
-            Logistik<span id="dot-logistik" class="indicator-dot hidden"></span>
-        </button>
-        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">
-            Aktivität<span id="dot-aktiv" class="indicator-dot hidden"></span>
-        </button>
-        <button onclick="switchTab('foto')" id="btn-foto" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">
-            Wichtig<span id="dot-foto" class="indicator-dot hidden"></span>
-        </button>
+    <nav class="bg-white flex justify-around shadow-md sticky top-0 z-20 border-b border-slate-200 text-center">
+        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">Logistik<span id="dot-logistik" class="indicator-dot hidden"></span></button>
+        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">Aktivität<span id="dot-aktiv" class="indicator-dot hidden"></span></button>
+        <button onclick="switchTab('foto')" id="btn-foto" class="p-4 flex-1 text-[11px] uppercase tracking-tighter">Wichtig<span id="dot-foto" class="indicator-dot hidden"></span></button>
     </nav>
 
     <main class="p-4 max-w-md mx-auto">
-        <!-- TAGES ALERTS -->
         <div id="day-alerts" class="space-y-3 mb-5"></div>
-
-        <!-- SEKTIONEN -->
         <div id="sec-logistik" class="space-y-4"></div>
         <div id="sec-aktiv" class="hidden space-y-4"></div>
         <div id="sec-foto" class="hidden space-y-4"></div>
@@ -83,16 +70,15 @@
             "Fotospot": "📸", "Restaurant": "🍽️"
         };
 
-        // BILDER-DATENBANK - EXAKT AUF DEINE NAMEN ABGESTIMMT
         const regionImages = {
-            "Buenos Aires": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=800&q=80",
-            "El Calafate Argentinien": "https://images.unsplash.com/photo-1516901632977-d141a38d4f9e?auto=format&fit=crop&w=800&q=80",
-            "Torre Del Paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
-            "Santiago de Chile": "https://images.unsplash.com/photo-1590059530472-841f4d0c9201?auto=format&fit=crop&w=800&q=80",
-            "San Pedro de Atacama": "https://images.unsplash.com/photo-1447015237013-0e80b2786ddc?auto=format&fit=crop&w=800&q=80",
-            "Matanzas": "https://images.unsplash.com/photo-1621509378978-7576f300c196?auto=format&fit=crop&w=800&q=80",
-            "München": "https://images.unsplash.com/photo-1595841055318-5a3f93b1e773?auto=format&fit=crop&w=800&q=80",
-            "Default": "https://images.unsplash.com/photo-1476451042684-979465856389?auto=format&fit=crop&w=800&q=80"
+            "buenos aires": "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?auto=format&fit=crop&w=800&q=80",
+            "el calafate argentinien": "https://images.unsplash.com/photo-1516901632977-d141a38d4f9e?auto=format&fit=crop&w=800&q=80",
+            "torre del paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
+            "santiago de chile": "https://images.unsplash.com/photo-1590059530472-841f4d0c9201?auto=format&fit=crop&w=800&q=80",
+            "san pedro de atacama": "https://images.unsplash.com/photo-1447015237013-0e80b2786ddc?auto=format&fit=crop&w=800&q=80",
+            "matanzas": "https://images.unsplash.com/photo-1621509378978-7576f300c196?auto=format&fit=crop&w=800&q=80",
+            "münchen": "https://images.unsplash.com/photo-1595841055318-5a3f93b1e773?auto=format&fit=crop&w=800&q=80",
+            "default": "https://images.unsplash.com/photo-1476451042684-979465856389?auto=format&fit=crop&w=800&q=80"
         };
 
         function loadCSV() {
@@ -100,15 +86,20 @@
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     tripData = results.data;
+                    console.log("CSV Daten geladen:", tripData); // Diagnose
                     processData();
+                },
+                error: function(err) {
+                    console.error("Fehler beim Laden der CSV:", err);
+                    document.getElementById('display-day').innerText = "CSV Fehler!";
                 }
             });
         }
 
         function processData() {
             days = [...new Set(tripData.map(item => parseInt(item["Tag#"])))].sort((a, b) => a - b);
-            
-            // Finde heutigen Tag basierend auf Datum in CSV (z.B. "15. Okt")
+            if(days.length === 0) return;
+
             const now = new Date();
             const months = {"Jan":0, "Feb":1, "Mär":2, "Apr":3, "Mai":4, "Jun":5, "Jul":6, "Aug":7, "Sep":8, "Okt":9, "Nov":10, "Dez":11};
             let todayTag = days[0];
@@ -133,20 +124,21 @@
             const items = tripData.filter(i => parseInt(i["Tag#"]) === currentTagNum);
             if (items.length === 0) return;
             
-            const region = items[0].Region;
+            const rawRegion = items[0].Region || "Default";
+            const regionKey = rawRegion.toLowerCase().trim(); // Leerzeichen entfernen und Kleinschreibung
             
-            // Header Infos
             document.getElementById('display-day').innerText = "Tag " + currentTagNum;
             document.getElementById('display-date').innerText = items[0].Datum;
-            document.getElementById('display-region').innerText = region;
+            document.getElementById('display-region').innerText = rawRegion;
             document.getElementById('sunrise').innerText = items[0].Sunrise || "--:--";
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
 
-            // Hintergrundbild setzen
-            const imgUrl = regionImages[region] || regionImages["Default"];
+            // Bild-Logik mit Diagnose
+            const imgUrl = regionImages[regionKey] || regionImages["default"];
+            console.log("Region erkannt:", regionKey, "Nutze Bild:", imgUrl);
             document.getElementById('hero-img').src = imgUrl;
 
-            // Navigations-Indikatoren (Punkte)
+            // Indikatoren
             document.getElementById('dot-logistik').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert'));
             document.getElementById('dot-aktiv').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Aktivität'));
             document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv));
@@ -159,25 +151,10 @@
 
             items.forEach(item => {
                 const icon = icons[item.Typ] || "📍";
-                
-                // Alerts/Risiken
-                if (item.Typ === "Alert") {
-                    document.getElementById('day-alerts').appendChild(createAlertCard(item));
-                }
-
-                // Logistik (Flug, Hotel, Taxi...)
-                if (item.Kategorie === "Logistik" && item.Typ !== "Alert") {
-                    document.getElementById('sec-logistik').appendChild(createCard(item, icon));
-                } 
-                // Aktivitäten (Hiking, Fotospot...)
-                else if (item.Kategorie === "Aktivität") {
-                    document.getElementById('sec-aktiv').appendChild(createCard(item, icon));
-                }
-
-                // Foto & Risiko-Details
-                if (item.Risiko || item["Shot idea"] || item.Objektiv) {
-                    document.getElementById('sec-foto').appendChild(createInfoCard(item));
-                }
+                if (item.Typ === "Alert") document.getElementById('day-alerts').appendChild(createAlertCard(item));
+                if (item.Kategorie === "Logistik" && item.Typ !== "Alert") document.getElementById('sec-logistik').appendChild(createCard(item, icon));
+                else if (item.Kategorie === "Aktivität") document.getElementById('sec-aktiv').appendChild(createCard(item, icon));
+                if (item.Risiko || item["Shot idea"] || item.Objektiv) document.getElementById('sec-foto').appendChild(createInfoCard(item));
             });
             switchTab('logistik'); 
         }
@@ -189,14 +166,13 @@
                 <div class="flex justify-between items-start">
                     <div class="flex items-center space-x-4">
                         <div class="text-3xl">${icon}</div>
-                        <div>
+                        <div class="overflow-hidden">
                             <span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">${item.Typ}</span>
-                            <h3 class="font-bold text-slate-800 leading-tight">${item.Titel}</h3>
+                            <h3 class="font-bold text-slate-800 leading-tight truncate">${item.Titel}</h3>
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right min-w-[60px]">
                         <p class="font-bold text-blue-900 text-sm">${item.Startzeit || ''}</p>
-                        <p class="text-[9px] text-slate-400 mt-0.5">${item.Dauer || ''}</p>
                     </div>
                 </div>
                 ${item.Details ? `<p class="text-xs text-slate-500 mt-3 ml-12 leading-relaxed italic border-l-2 border-slate-100 pl-3">${item.Details}</p>` : ''}
@@ -243,13 +219,7 @@
             }
         }
 
-        // Start
         loadCSV();
-
-        // Service Worker für Offline
-        if ('serviceWorker' in navigator) { 
-            navigator.serviceWorker.register('sw.js'); 
-        }
     </script>
 </body>
 </html>
