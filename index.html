@@ -7,11 +7,11 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- CSV Parser Bibliothek -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         .tab-active { border-bottom: 4px solid #3b82f6; color: #1e3a8a; font-weight: bold; }
         .hidden { display: none; }
+        .indicator-dot { height: 8px; width: 8px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
         .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
     </style>
 </head>
@@ -23,8 +23,8 @@
             <button onclick="changeDay(-1)" class="text-2xl px-4 active:scale-90">◀</button>
             <div class="text-center">
                 <div id="display-region" class="text-[10px] uppercase tracking-widest opacity-70">Region</div>
-                <h1 id="display-day" class="text-xl font-bold italic">Lade Daten...</h1>
-                <p id="display-date" class="text-sm opacity-90">--. --</p>
+                <h1 id="display-day" class="text-xl font-bold italic text-blue-200">Lade...</h1>
+                <p id="display-date" class="text-sm opacity-90 font-medium">--. --</p>
             </div>
             <button onclick="changeDay(1)" class="text-2xl px-4 active:scale-90">▶</button>
         </div>
@@ -34,15 +34,21 @@
         </div>
     </header>
 
-    <!-- Navigation -->
+    <!-- Navigation mit Indikatoren -->
     <nav class="bg-white flex justify-around shadow-sm sticky top-[104px] z-10 border-b">
-        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-3 flex-1 text-xs tab-active uppercase">Logistik</button>
-        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-3 flex-1 text-xs uppercase">Aktivitäten</button>
-        <button onclick="switchTab('foto')" id="btn-foto" class="p-3 flex-1 text-xs uppercase">Wichtig / Foto</button>
+        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
+            Logistik<span id="dot-logistik" class="indicator-dot hidden"></span>
+        </button>
+        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
+            Aktivität<span id="dot-aktiv" class="indicator-dot hidden"></span>
+        </button>
+        <button onclick="switchTab('foto')" id="btn-foto" class="p-3 flex-1 text-[11px] uppercase tracking-tighter">
+            Foto/Info<span id="dot-foto" class="indicator-dot hidden"></span>
+        </button>
     </nav>
 
     <main class="p-4 max-w-md mx-auto">
-        <!-- ALERT SEKTION (Oben angepinnt für den Tag) -->
+        <!-- ALERT SEKTION -->
         <div id="day-alerts" class="space-y-3 mb-6"></div>
 
         <div id="sec-logistik" class="space-y-4"></div>
@@ -56,19 +62,11 @@
         let currentDayIndex = 0;
 
         const icons = {
-            "Flug": "✈️",
-            "Hotel": "🏨",
-            "Taxi": "🚕",
-            "Mietwagen": "🚗",
-            "Bus": "🚌",
-            "Alert": "⚠️",
-            "Ausflug": "🗺️",
-            "Hiking": "🥾",
-            "Fotospot": "📸",
-            "Restaurant": "🍽️"
+            "Flug": "✈️", "Hotel": "🏨", "Taxi": "🚕", "Mietwagen": "🚗",
+            "Bus": "🚌", "Alert": "⚠️", "Ausflug": "🗺️", "Hiking": "🥾",
+            "Fotospot": "📸", "Restaurant": "🍽️"
         };
 
-        // 1. Daten aus der CSV laden
         function loadCSV() {
             Papa.parse("trip_data.csv", {
                 download: true,
@@ -82,22 +80,18 @@
         }
 
         function processData() {
-            // Alle verfügbaren Tage sammeln
             days = [...new Set(tripData.map(item => parseInt(item["Tag#"])))].sort((a, b) => a - b);
             
-            // Heute finden (Basierend auf dem Datum in der CSV "15. Okt")
+            // Heute finden
             const now = new Date();
             const months = {"Jan":0, "Feb":1, "Mär":2, "Apr":3, "Mai":4, "Jun":5, "Jul":6, "Aug":7, "Sep":8, "Okt":9, "Nov":10, "Dez":11};
-            
             let todayTag = days[0];
             tripData.forEach(item => {
                 const parts = item.Datum.split(". ");
                 if(parts.length === 2) {
                     const d = parseInt(parts[0]);
                     const m = months[parts[1]];
-                    if(now.getDate() === d && now.getMonth() === m) {
-                        todayTag = parseInt(item["Tag#"]);
-                    }
+                    if(now.getDate() === d && now.getMonth() === m) todayTag = parseInt(item["Tag#"]);
                 }
             });
 
@@ -118,6 +112,11 @@
             document.getElementById('sunrise').innerText = items[0].Sunrise || "--:--";
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
 
+            // Menü-Indikatoren setzen
+            document.getElementById('dot-logistik').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert'));
+            document.getElementById('dot-aktiv').classList.toggle('hidden', !items.some(i => i.Kategorie === 'Aktivität'));
+            document.getElementById('dot-foto').classList.toggle('hidden', !items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv));
+
             // Sektionen leeren
             document.getElementById('day-alerts').innerHTML = "";
             document.getElementById('sec-logistik').innerHTML = "";
@@ -128,11 +127,8 @@
                 const icon = icons[item.Typ] || "📍";
                 const card = createCard(item, icon);
 
-                // Typ "Alert" kommt immer nach oben
-                if (item.Typ === "Alert" || item.Risiko) {
-                    if (item.Typ === "Alert") {
-                        document.getElementById('day-alerts').appendChild(createAlertCard(item));
-                    }
+                if (item.Typ === "Alert") {
+                    document.getElementById('day-alerts').appendChild(createAlertCard(item));
                 }
 
                 if (item.Kategorie === "Logistik" && item.Typ !== "Alert") {
@@ -141,17 +137,18 @@
                     document.getElementById('sec-aktiv').appendChild(card);
                 }
 
-                // Foto & Risiko-Details
                 if (item.Risiko || item["Shot idea"] || item.Objektiv) {
                     document.getElementById('sec-foto').appendChild(createInfoCard(item));
                 }
             });
+
+            // Aktiven Tab hervorheben
+            switchTab('logistik'); 
         }
 
         function createCard(item, icon) {
             const div = document.createElement('div');
-            div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200";
-            
+            div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-3";
             div.innerHTML = `
                 <div class="flex justify-between items-start">
                     <div class="flex items-center space-x-3">
@@ -168,8 +165,8 @@
                 </div>
                 ${item.Details ? `<p class="text-sm text-slate-500 mt-2 ml-9">${item.Details}</p>` : ''}
                 <div class="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center ml-9">
-                    <span class="text-[10px] font-mono text-slate-400">${item["Booking Code"] || item.Anbieter || ''}</span>
-                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">📍 Maps</a>` : ''}
+                    <span class="text-[10px] font-mono text-slate-400 truncate max-w-[150px]">${item["Booking Code"] || item.Anbieter || ''}</span>
+                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold">📍 MAPS</a>` : ''}
                 </div>
             `;
             return div;
@@ -177,11 +174,11 @@
 
         function createAlertCard(item) {
             const div = document.createElement('div');
-            div.className = "alert-card p-3 rounded-r-xl shadow-md";
+            div.className = "alert-card p-3 rounded-r-xl shadow-sm mb-2";
             div.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <span>⚠️</span>
-                    <h3 class="font-bold text-red-800 text-sm italic">${item.Risiko || item.Titel}</h3>
+                <div class="flex items-start space-x-2">
+                    <span class="mt-0.5 text-xs">⚠️</span>
+                    <h3 class="font-bold text-red-800 text-xs uppercase tracking-tighter leading-tight">${item.Titel} ${item.Risiko ? ': ' + item.Risiko : ''}</h3>
                 </div>
             `;
             return div;
@@ -189,12 +186,12 @@
 
         function createInfoCard(item) {
             const div = document.createElement('div');
-            div.className = "bg-slate-800 text-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500";
+            div.className = "bg-slate-800 text-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500 mb-3";
             div.innerHTML = `
-                <h3 class="font-bold text-orange-400 text-xs mb-2 uppercase tracking-widest">${item.Titel}</h3>
-                ${item.Risiko ? `<p class="text-sm text-red-300 mb-2 font-bold">⚠️ ${item.Risiko}</p>` : ''}
-                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300">"📸 ${item["Shot idea"]}"</p>` : ''}
-                <div class="grid grid-cols-2 gap-2 mt-3 text-[10px]">
+                <h3 class="font-bold text-orange-400 text-[10px] mb-2 uppercase tracking-widest">${item.Titel}</h3>
+                ${item.Risiko ? `<p class="text-sm text-red-300 mb-2 font-bold leading-tight">⚠️ ${item.Risiko}</p>` : ''}
+                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300 leading-snug">"📸 ${item["Shot idea"]}"</p>` : ''}
+                <div class="grid grid-cols-2 gap-2 mt-3 text-[9px]">
                     ${item.Objektiv ? `<div class="bg-slate-700 p-2 rounded"><strong>Linse:</strong><br>${item.Objektiv}</div>` : ''}
                     ${item["Bestes Licht"] ? `<div class="bg-slate-700 p-2 rounded"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>` : ''}
                 </div>
@@ -217,10 +214,7 @@
             }
         }
 
-        // App Start
         loadCSV();
-
-        // Offline Support
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
 </body>
