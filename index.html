@@ -16,30 +16,45 @@
         .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%); }
         #home-img { -webkit-touch-callout: none; user-select: none; pointer-events: auto; }
         body { overscroll-behavior-y: contain; overflow-x: hidden; width: 100%; position: relative; }
+        /* Snap Scrolling für die Fotospots */
+        .snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .snap-center { scroll-snap-align: center; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
-    <!-- VOLLBILD OVERLAY -->
+    <!-- FOTOSPOT OVERLAY (Horizontaler Slider) -->
+    <div id="spot-overlay" class="hidden fixed inset-0 z-[110] bg-slate-900/95 backdrop-blur-md flex flex-col">
+        <div class="p-6 flex justify-between items-center text-white">
+            <h2 class="text-xl font-bold italic">Region Fotospots</h2>
+            <button onclick="closeSpotOverlay()" class="text-3xl">&times;</button>
+        </div>
+        <div id="spot-slider" class="flex-1 flex overflow-x-auto snap-x gap-6 px-6 pb-10 items-center">
+            <!-- Spots werden hier dynamisch eingefügt -->
+        </div>
+        <p class="text-center text-white/40 text-[10px] mb-8 uppercase tracking-[0.3em]">Wische horizontal durch die Spots</p>
+    </div>
+
+    <!-- VOLLBILD UNTERKUNFT OVERLAY -->
     <div id="image-overlay" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm text-center">
         <img id="overlay-img" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl border border-white/20">
         <p class="absolute bottom-10 text-white/50 text-[10px] uppercase tracking-[0.3em]">Finger loslassen zum Schließen</p>
     </div>
 
-    <!-- Header & Hero Image -->
+    <!-- Header -->
     <header class="relative bg-slate-900 text-white overflow-hidden shadow-lg h-80">
         <div id="hero-img-container" class="absolute inset-0 bg-slate-800">
             <img id="hero-img" src="" alt="Region" class="w-full h-full object-cover opacity-70 transition-opacity duration-500">
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
         
-        <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10">
-            <button onclick="changeDay(-1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10 text-white">◀</button>
+        <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10 text-white">
+            <button onclick="changeDay(-1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10">◀</button>
             <div class="text-center">
                 <div id="display-region" class="text-[10px] uppercase tracking-[0.2em] text-blue-300 font-bold drop-shadow-md">Region</div>
-                <h1 id="display-day" class="text-xl font-bold italic drop-shadow-md tracking-tight text-white">Lade...</h1>
+                <h1 id="display-day" class="text-xl font-bold italic drop-shadow-md tracking-tight">Lade...</h1>
             </div>
-            <button onclick="changeDay(1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10 text-white">▶</button>
+            <button onclick="changeDay(1)" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center active:scale-90 border border-white/10">▶</button>
         </div>
 
         <div class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end z-10 text-white font-sans">
@@ -54,9 +69,14 @@
                     <span id="home-title" class="text-[10px] text-white font-black mt-2 max-w-[120px] truncate text-right drop-shadow-md uppercase tracking-tight">Hotel</span>
                 </div>
 
-                <div class="flex space-x-3 text-[11px] font-mono bg-black/60 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10 shadow-xl">
-                    <span>🌅 <span id="sunrise">--:--</span></span>
-                    <span>🌇 <span id="sunset">--:--</span></span>
+                <div class="flex items-center space-x-2">
+                    <!-- NEU: Kamera Icon für Regionale Fotospots -->
+                    <button id="btn-camera" onclick="openSpotOverlay()" class="hidden bg-orange-500 text-white w-9 h-9 rounded-lg flex items-center justify-center shadow-lg active:scale-90 transition-transform text-lg border border-white/20">📸</button>
+                    
+                    <div class="flex space-x-3 text-[11px] font-mono bg-black/60 px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10 shadow-xl">
+                        <span>🌅 <span id="sunrise">--:--</span></span>
+                        <span>🌇 <span id="sunset">--:--</span></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -77,42 +97,45 @@
 
     <script>
         let tripData = [];
+        let spotData = []; // Daten für Regionale Fotospots
         let days = [];
         let currentDayIndex = 0;
         let isPeeking = false;
 
-        const icons = {
-            "Flug": "✈️", "Hotel": "🏨", "Taxi": "🚕", "Mietwagen": "🚗",
-            "Bus": "🚌", "Alert": "⚠️", "Ausflug": "🗺️", "Hiking": "🥾",
-            "Fotospot": "📸", "Restaurant": "🍽️"
-        };
+        const icons = { "Flug": "✈️", "Hotel": "🏨", "Taxi": "🚕", "Mietwagen": "🚗", "Bus": "🚌", "Alert": "⚠️", "Ausflug": "🗺️", "Hiking": "🥾", "Fotospot": "📸", "Restaurant": "🍽️" };
 
         const regionImages = {
             "buenos aires": "https://images.pexels.com/photos/34104156/pexels-photo-34104156.jpeg?auto=format&fit=crop&w=800&q=80",
             "el calafate argentinien": "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=format&fit=crop&w=800&q=80",
             "torre del paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
-            "torres del paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80",
             "santiago de chile": "https://images.pexels.com/photos/35858884/pexels-photo-35858884.jpeg?auto=format&fit=crop&w=800&q=80",
             "san pedro de atacama": "https://images.pexels.com/photos/20853000/pexels-photo-20853000.jpeg?auto=format&fit=crop&w=800&q=80",
             "matanzas": "https://a0.muscache.com/im/pictures/hosting/Hosting-1580583864418203432/original/fe81def6-95c3-4848-aad9-a964c71794c9.jpeg?auto=format&fit=crop&w=800&q=80",
-            "münchen": "https://images.pexels.com/photos/37584876/pexels-photo-37584876.jpeg?auto=format&fit=crop&w=800&q=80",
             "default": "https://images.pexels.com/photos/20890197/pexels-photo-20890197.jpeg?auto=format&fit=crop&w=800&q=80"
         };
 
         function loadCSV() {
+            // Reiseplan laden
             Papa.parse("trip_data.csv", {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
                     tripData = results.data;
-                    processData();
+                    // Fotospots laden
+                    Papa.parse("photo_spots.csv", {
+                        download: true, header: true, skipEmptyLines: true,
+                        complete: function(res) {
+                            spotData = res.data;
+                            processData();
+                        }
+                    });
                 }
             });
         }
 
         function timeToMinutes(timeStr) {
-            if (!timeStr || timeStr.trim() === "" || !timeStr.includes(':')) return 9999;
+            if (!timeStr || !timeStr.includes(':')) return 9999;
             const parts = timeStr.split(':');
-            return (parseInt(parts[0], 10) * 60) + parseInt(parts[1], 10);
+            return (parseInt(parts[0]) * 60) + parseInt(parts[1]);
         }
 
         function processData() {
@@ -123,22 +146,15 @@
             tripData.forEach(item => {
                 if(!item.Datum) return;
                 const parts = item.Datum.split(". ");
-                if(parts.length === 2) {
-                    const d = parseInt(parts[0]);
-                    const m = months[parts[1]];
-                    if(now.getDate() === d && now.getMonth() === m) todayTag = parseInt(item["Tag#"]);
-                }
+                if(now.getDate() === parseInt(parts[0]) && now.getMonth() === months[parts[1]]) todayTag = parseInt(item["Tag#"]);
             });
             currentDayIndex = days.indexOf(todayTag);
-            if(currentDayIndex === -1) currentDayIndex = 0;
             render();
         }
 
         function render() {
             const currentTagNum = days[currentDayIndex];
             const items = tripData.filter(i => parseInt(i["Tag#"]) === currentTagNum);
-            if (items.length === 0) return;
-
             items.sort((a, b) => timeToMinutes(a.Startzeit) - timeToMinutes(b.Startzeit));
             
             const rawRegion = items[0].Region || "Default";
@@ -151,25 +167,25 @@
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
             document.getElementById('hero-img').src = regionImages[regionKey] || regionImages["default"];
 
+            // Kamera Icon Logik
+            const hasSpots = spotData.some(s => s.Region.toLowerCase().trim() === regionKey);
+            document.getElementById('btn-camera').classList.toggle('hidden', !hasSpots);
+
+            // Unterkunft Logik (Peek)
             const homeItem = items.find(i => i.Home && i.Home.trim() !== "");
             const homePreview = document.getElementById('home-preview');
-            const homeImg = document.getElementById('home-img');
-            const overlay = document.getElementById('image-overlay');
-            const overlayImg = document.getElementById('overlay-img');
-
             if(homeItem) {
                 homePreview.classList.remove('hidden');
-                homeImg.src = homeItem.Home;
+                document.getElementById('home-img').src = homeItem.Home;
                 document.getElementById('home-title').innerText = homeItem.Hometitle || homeItem.Titel;
-                const showPeek = (e) => { e.preventDefault(); isPeeking = true; overlayImg.src = homeItem.Home; overlay.classList.remove('hidden'); };
-                const hidePeek = () => { overlay.classList.add('hidden'); setTimeout(() => { isPeeking = false; }, 100); };
-                homeImg.onmousedown = showPeek;
-                homeImg.ontouchstart = showPeek;
-                window.onmouseup = hidePeek;
-                window.ontouchend = hidePeek;
+                const showPeek = (e) => { e.preventDefault(); isPeeking = true; document.getElementById('overlay-img').src = homeItem.Home; document.getElementById('image-overlay').classList.remove('hidden'); };
+                const hidePeek = () => { document.getElementById('image-overlay').classList.add('hidden'); setTimeout(() => { isPeeking = false; }, 100); };
+                document.getElementById('home-img').onmousedown = showPeek;
+                document.getElementById('home-img').ontouchstart = showPeek;
+                window.onmouseup = hidePeek; window.ontouchend = hidePeek;
             } else { homePreview.classList.add('hidden'); }
 
-            // Indikatoren
+            // Tabs füllen
             const hasLogistik = items.some(i => i.Kategorie === 'Logistik' && i.Typ !== 'Alert');
             const hasAktiv = items.some(i => i.Kategorie === 'Aktivität');
             const hasFoto = items.some(i => i.Risiko || i['Shot idea'] || i.Objektiv || i.Wichtig);
@@ -191,14 +207,44 @@
                 if (item.Risiko || item["Shot idea"] || item.Objektiv || item.Wichtig) document.getElementById('sec-foto').appendChild(createInfoCard(item));
             });
 
-            // SMART TAB LOGIK: Automatisch zum Tab mit Inhalt springen
-            if (hasLogistik) {
-                switchTab('logistik');
-            } else if (hasAktiv) {
-                switchTab('aktiv');
-            } else {
-                switchTab('foto');
-            }
+            if (hasLogistik) switchTab('logistik'); else if (hasAktiv) switchTab('aktiv'); else switchTab('foto');
+        }
+
+        // NEUE FUNKTION: Fotospot Overlay öffnen
+        function openSpotOverlay() {
+            const region = document.getElementById('display-region').innerText.toLowerCase().trim();
+            const spots = spotData.filter(s => s.Region.toLowerCase().trim() === region);
+            const slider = document.getElementById('spot-slider');
+            slider.innerHTML = "";
+
+            spots.forEach(spot => {
+                const card = document.createElement('div');
+                card.className = "min-w-[85vw] bg-white rounded-2xl overflow-hidden shadow-2xl snap-center flex flex-col h-[65vh]";
+                card.innerHTML = `
+                    <div class="h-1/2 bg-slate-200">
+                        <img src="${spot.Image}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-5 flex flex-col justify-between flex-1">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 leading-tight mb-2">${spot.Title}</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed italic mb-4">"${spot.Details}"</p>
+                            <div class="grid grid-cols-2 gap-3 text-[10px] uppercase font-bold text-slate-400">
+                                <div class="bg-slate-50 p-2 rounded-lg">🕒 Licht: <span class="text-slate-800 block">${spot.Licht}</span></div>
+                                <div class="bg-slate-50 p-2 rounded-lg">📸 Linse: <span class="text-slate-800 block">${spot.Linse}</span></div>
+                            </div>
+                        </div>
+                        <a href="${spot.Maps}" target="_blank" class="block w-full bg-orange-500 text-white text-center py-3 rounded-xl font-bold shadow-lg active:bg-orange-600 transition-colors mt-4">📍 STANDORT ÖFFNEN</a>
+                    </div>
+                `;
+                slider.appendChild(card);
+            });
+            document.getElementById('spot-overlay').classList.remove('hidden');
+            isPeeking = true; // Swipe für Hauptseite deaktivieren
+        }
+
+        function closeSpotOverlay() {
+            document.getElementById('spot-overlay').classList.add('hidden');
+            isPeeking = false;
         }
 
         function createCard(item, icon) {
@@ -218,10 +264,10 @@
                         <p class="text-[9px] text-slate-400 mt-0.5 whitespace-nowrap">${item.Dauer ? '⏳ ' + item.Dauer : ''}</p>
                     </div>
                 </div>
-                ${item.Details ? `<p class="text-xs text-slate-500 mt-3 ml-12 leading-relaxed italic border-l-2 border-slate-100 pl-3">${item.Details}</p>` : ''}
-                <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center ml-12">
-                    <span class="text-[10px] font-mono text-slate-400 truncate max-w-[130px] uppercase">${item["Booking Code"] || item.Anbieter || ''}</span>
-                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-bold shadow-md active:scale-95 transition-transform">📍 MAPS</a>` : ''}
+                ${item.Details ? `<p class="text-xs text-slate-500 mt-3 ml-12 border-l-2 border-slate-100 pl-3">${item.Details}</p>` : ''}
+                <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center ml-12 text-[10px]">
+                    <span class="font-mono text-slate-400 uppercase truncate max-w-[130px]">${item["Booking Code"] || item.Anbieter || ''}</span>
+                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-md">📍 MAPS</a>` : ''}
                 </div>`;
             return div;
         }
@@ -229,7 +275,7 @@
         function createAlertCard(item) {
             const div = document.createElement('div');
             div.className = "alert-card p-4 rounded-r-xl shadow-sm mb-2";
-            div.innerHTML = `<h3 class="font-bold text-red-800 text-[11px] uppercase tracking-tight leading-tight">⚠️ ${item.Titel} ${item.Risiko ? ': ' + item.Risiko : ''}</h3>`;
+            div.innerHTML = `<h3 class="font-bold text-red-800 text-[11px] uppercase tracking-tight">⚠️ ${item.Titel} ${item.Risiko ? ': ' + item.Risiko : ''}</h3>`;
             return div;
         }
 
@@ -237,45 +283,37 @@
             const div = document.createElement('div');
             div.className = "bg-slate-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-orange-500 mb-4";
             let htmlContent = `<h3 class="font-bold text-orange-400 text-[10px] mb-3 uppercase tracking-widest">${item.Titel}</h3>`;
-            if (item.Wichtig && item.Wichtig.trim() !== "") {
-                htmlContent += `<div class="mb-4 p-3 bg-white/5 rounded-lg border border-white/10"><p class="text-[10px] text-orange-300 uppercase font-bold mb-1">💡 Wichtiger Hinweis</p><p class="text-sm leading-relaxed">${item.Wichtig}</p></div>`;
-            }
-            if (item.Risiko && item.Risiko.trim() !== "") htmlContent += `<p class="text-sm text-red-300 mb-3 font-bold leading-tight uppercase break-words">⚠️ Risiko: ${item.Risiko}</p>`;
-            if (item["Shot idea"] && item["Shot idea"].trim() !== "") htmlContent += `<p class="text-xs italic text-slate-300 leading-relaxed mb-3">"📸 ${item["Shot idea"]}"</p>`;
+            if (item.Wichtig) htmlContent += `<div class="mb-4 p-3 bg-white/5 rounded-lg border border-white/10"><p class="text-[10px] text-orange-300 uppercase font-bold mb-1">💡 Wichtig</p><p class="text-sm leading-relaxed">${item.Wichtig}</p></div>`;
+            if (item.Risiko) htmlContent += `<p class="text-sm text-red-300 mb-3 font-bold uppercase">⚠️ Risiko: ${item.Risiko}</p>`;
+            if (item["Shot idea"]) htmlContent += `<p class="text-xs italic text-slate-300 mb-3">"📸 ${item["Shot idea"]}"</p>`;
             if (item.Objektiv || item["Bestes Licht"]) {
-                htmlContent += `<div class="grid grid-cols-2 gap-3 mt-2 text-[9px]">`;
-                if (item.Objektiv) htmlContent += `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Linse:</strong><br>${item.Objektiv}</div>`;
-                if (item["Bestes Licht"]) htmlContent += `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>`;
-                htmlContent += `</div>`;
+                htmlContent += `<div class="grid grid-cols-2 gap-3 text-[9px]">
+                    ${item.Objektiv ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">Linse: ${item.Objektiv}</div>` : ''}
+                    ${item["Bestes Licht"] ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">Licht: ${item["Bestes Licht"]}</div>` : ''}
+                </div>`;
             }
             div.innerHTML = htmlContent;
             return div;
         }
 
-        function switchTab(tab) {
+        function switchTab(t) {
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            document.getElementById('btn-' + tab).classList.add('tab-active');
+            document.getElementById('btn-' + t).classList.add('tab-active');
             document.querySelectorAll('main > div:not(#day-alerts)').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-' + tab).classList.remove('hidden');
+            document.getElementById('sec-' + t).classList.remove('hidden');
         }
 
-        function changeDay(delta) {
-            if (days[currentDayIndex + delta]) {
-                currentDayIndex += delta;
-                render();
-                window.scrollTo(0,0);
-            }
+        function changeDay(d) {
+            if (days[currentDayIndex + d]) { currentDayIndex += d; render(); window.scrollTo(0,0); }
         }
 
-        // SWIPE LOGIK
+        // Swipe & App Load
         let startX = 0, startY = 0;
-        document.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
-        document.addEventListener('touchend', (e) => {
+        document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
+        document.addEventListener('touchend', e => {
             if (isPeeking) return;
-            let diffX = startX - e.changedTouches[0].clientX, diffY = startY - e.changedTouches[0].clientY;
-            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 70) {
-                if (diffX > 0) changeDay(1); else changeDay(-1);
-            }
+            let dX = startX - e.changedTouches[0].clientX, dY = startY - e.changedTouches[0].clientY;
+            if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 70) changeDay(dX > 0 ? 1 : -1);
         }, { passive: true });
 
         loadCSV();
