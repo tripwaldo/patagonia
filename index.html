@@ -7,9 +7,12 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CSV Parser Bibliothek -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         .tab-active { border-bottom: 4px solid #3b82f6; color: #1e3a8a; font-weight: bold; }
         .hidden { display: none; }
+        .alert-card { border-left: 6px solid #ef4444; background-color: #fef2f2; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
@@ -17,13 +20,13 @@
     <!-- Header -->
     <header class="bg-blue-900 text-white p-4 sticky top-0 z-20 shadow-lg">
         <div class="flex justify-between items-center max-w-md mx-auto">
-            <button onclick="changeDay(-1)" class="text-2xl px-4 active:scale-90 transition-transform">◀</button>
+            <button onclick="changeDay(-1)" class="text-2xl px-4 active:scale-90">◀</button>
             <div class="text-center">
                 <div id="display-region" class="text-[10px] uppercase tracking-widest opacity-70">Region</div>
-                <h1 id="display-day" class="text-xl font-bold">Tag -</h1>
+                <h1 id="display-day" class="text-xl font-bold italic">Lade Daten...</h1>
                 <p id="display-date" class="text-sm opacity-90">--. --</p>
             </div>
-            <button onclick="changeDay(1)" class="text-2xl px-4 active:scale-90 transition-transform">▶</button>
+            <button onclick="changeDay(1)" class="text-2xl px-4 active:scale-90">▶</button>
         </div>
         <div class="flex justify-around mt-3 max-w-sm mx-auto text-xs border-t border-blue-800 pt-2 font-mono">
             <span>🌅 <span id="sunrise">--:--</span></span>
@@ -33,18 +36,14 @@
 
     <!-- Navigation -->
     <nav class="bg-white flex justify-around shadow-sm sticky top-[104px] z-10 border-b">
-        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-3 flex-1 text-xs tab-active uppercase tracking-tighter">Logistik</button>
-        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-3 flex-1 text-xs uppercase tracking-tighter">Aktivitäten</button>
-        <button onclick="switchTab('foto')" id="btn-foto" class="p-3 flex-1 text-xs uppercase tracking-tighter">Foto & Info</button>
+        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-3 flex-1 text-xs tab-active uppercase">Logistik</button>
+        <button onclick="switchTab('aktiv')" id="btn-aktiv" class="p-3 flex-1 text-xs uppercase">Aktivitäten</button>
+        <button onclick="switchTab('foto')" id="btn-foto" class="p-3 flex-1 text-xs uppercase">Wichtig / Foto</button>
     </nav>
 
     <main class="p-4 max-w-md mx-auto">
-        <!-- Risiko-Warnung -->
-        <div id="risk-box" class="hidden bg-orange-100 border-l-4 border-orange-500 p-3 mb-4 rounded shadow-sm">
-            <p class="text-xs font-bold text-orange-800 uppercase">Achtung / Risiko</p>
-            <p id="risk-text" class="text-sm text-orange-900 font-medium"></p>
-            <p id="planb-text" class="text-xs text-orange-700 mt-1 italic"></p>
-        </div>
+        <!-- ALERT SEKTION (Oben angepinnt für den Tag) -->
+        <div id="day-alerts" class="space-y-3 mb-6"></div>
 
         <div id="sec-logistik" class="space-y-4"></div>
         <div id="sec-aktiv" class="hidden space-y-4"></div>
@@ -52,123 +51,152 @@
     </main>
 
     <script>
-        // DATENBANK MIT SONNENZEITEN (Recherchiert für Okt 2024)
-        const tripData = [
-            { tag: 1, datum: "2024-10-15", dShort: "15. Okt", region: "Buenos Aires", kat: "Transfer", typ: "Flug", titel: "Flug MUC-MAD-EZE", details: "Iberia", start: "07:30", ende: "19:55", code: "IB123", risiko: "1h55 Connection in MAD", planb: "umbuchen", sun: ["06:17", "19:09"] },
-            { tag: 1, datum: "2024-10-15", dShort: "15. Okt", region: "Buenos Aires", kat: "Wohnen", typ: "Hotel", titel: "Airbnb Buenos Aires", details: "Check-in nach Ankunft", sun: ["06:17", "19:09"] },
-            { tag: 2, datum: "2024-10-16", dShort: "16. Okt", region: "Buenos Aires", kat: "Wohnen", typ: "Hotel", titel: "Airbnb Buenos Aires", sun: ["06:16", "19:10"] },
-            { tag: 3, datum: "2024-10-17", dShort: "17. Okt", region: "Buenos Aires", kat: "Wohnen", typ: "Hotel", titel: "Airbnb Buenos Aires", sun: ["06:14", "19:11"] },
-            { tag: 4, datum: "2024-10-18", dShort: "18. Okt", region: "El Calafate", kat: "Transfer", typ: "Flug", titel: "Flug AEP-FTE", details: "Aerolinas Argentinas", start: "09:20", ende: "12:40", code: "AR1870", risiko: "Wetter El Calafate", planb: "Later flight", sun: ["06:41", "20:32"] },
-            { tag: 4, datum: "2024-10-18", dShort: "18. Okt", region: "El Calafate", kat: "Transfer", typ: "Taxi", titel: "Taxi zu Airbnb", details: "Fahrt ca. 20 Min", start: "13:00", sun: ["06:41", "20:32"] },
-            { tag: 4, datum: "2024-10-18", dShort: "18. Okt", region: "El Calafate", kat: "Wohnen", typ: "Hotel", titel: "Airbnb El Calafate", details: "Calle Los Gauchos", start: "15:00", sun: ["06:41", "20:32"] },
-            { tag: 5, datum: "2024-10-19", dShort: "19. Okt", region: "El Calafate", kat: "Aktivität", typ: "Ausflug", titel: "Fahrt zu Perito Moreno", details: "Mietwagen Station Flughafen", start: "08:00", sun: ["06:39", "20:34"] },
-            { tag: 5, datum: "2024-10-19", dShort: "19. Okt", region: "El Calafate", kat: "Aktivität", typ: "Hiking", titel: "Gletscher Hiking Perito Moreno", details: "Treffpunkt Parkplatz", start: "10:00", ende: "15:00", shot_idea: "Eis-Strukturen mit Tele", objektiv: "100-400mm", best_light: "Blaues Licht Mittags", sun: ["06:39", "20:34"] }
-        ];
+        let tripData = [];
+        let days = [];
+        let currentDayIndex = 0;
 
-        // Konfiguration der Icons
         const icons = {
             "Flug": "✈️",
-            "Bus": "🚌",
-            "Mietwagen": "🚗",
-            "Hotel": "🏠",
-            "Wohnen": "🏠",
+            "Hotel": "🏨",
             "Taxi": "🚕",
-            "Hiking": "🥾",
+            "Mietwagen": "🚗",
+            "Bus": "🚌",
+            "Alert": "⚠️",
             "Ausflug": "🗺️",
-            "Transfer": "🔄"
+            "Hiking": "🥾",
+            "Fotospot": "📸",
+            "Restaurant": "🍽️"
         };
 
-        let currentDayIndex = 0;
-        let days = [];
-
-        function init() {
-            days = Array.from(new Set(tripData.map(d => d.tag)));
-            const todayStr = new Date().toISOString().split('T')[0];
-            const foundIndex = tripData.findIndex(d => d.datum === todayStr);
-            currentDayIndex = foundIndex !== -1 ? days.indexOf(tripData[foundIndex].tag) : 0;
-            render();
-            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-        }
-
-        function render() {
-            const currentTagNum = days[currentDayIndex];
-            const dayItems = tripData.filter(d => d.tag === currentTagNum);
-            const firstItem = dayItems[0];
-
-            document.getElementById('display-day').innerText = "Tag " + currentTagNum;
-            document.getElementById('display-date').innerText = firstItem.dShort;
-            document.getElementById('display-region').innerText = firstItem.region;
-            document.getElementById('sunrise').innerText = firstItem.sun[0];
-            document.getElementById('sunset').innerText = firstItem.sun[1];
-
-            const riskItem = dayItems.find(i => i.risiko);
-            if(riskItem) {
-                document.getElementById('risk-box').classList.remove('hidden');
-                document.getElementById('risk-text').innerText = riskItem.risiko;
-                document.getElementById('planb-text').innerText = "Plan B: " + riskItem.planb;
-            } else {
-                document.getElementById('risk-box').classList.add('hidden');
-            }
-
-            document.getElementById('sec-logistik').innerHTML = "";
-            document.getElementById('sec-aktiv').innerHTML = "";
-            document.getElementById('sec-foto').innerHTML = "";
-
-            dayItems.forEach(item => {
-                const icon = icons[item.typ] || icons[item.kat] || "📍";
-                
-                if (["Transfer", "Wohnen", "Taxi", "Hotel", "Mietwagen", "Bus"].includes(item.kat) || ["Taxi", "Mietwagen", "Bus"].includes(item.typ)) {
-                    document.getElementById('sec-logistik').appendChild(createCard(item, icon, "blue"));
-                } else if (item.kat === "Aktivität") {
-                    document.getElementById('sec-aktiv').appendChild(createCard(item, icon, "emerald"));
-                }
-                
-                if (item.shot_idea || item.objektiv) {
-                    document.getElementById('sec-foto').appendChild(createFotoCard(item));
+        // 1. Daten aus der CSV laden
+        function loadCSV() {
+            Papa.parse("trip_data.csv", {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    tripData = results.data;
+                    processData();
                 }
             });
         }
 
-        function createCard(item, icon, color) {
+        function processData() {
+            // Alle verfügbaren Tage sammeln
+            days = [...new Set(tripData.map(item => parseInt(item["Tag#"])))].sort((a, b) => a - b);
+            
+            // Heute finden (Basierend auf dem Datum in der CSV "15. Okt")
+            const now = new Date();
+            const months = {"Jan":0, "Feb":1, "Mär":2, "Apr":3, "Mai":4, "Jun":5, "Jul":6, "Aug":7, "Sep":8, "Okt":9, "Nov":10, "Dez":11};
+            
+            let todayTag = days[0];
+            tripData.forEach(item => {
+                const parts = item.Datum.split(". ");
+                if(parts.length === 2) {
+                    const d = parseInt(parts[0]);
+                    const m = months[parts[1]];
+                    if(now.getDate() === d && now.getMonth() === m) {
+                        todayTag = parseInt(item["Tag#"]);
+                    }
+                }
+            });
+
+            currentDayIndex = days.indexOf(todayTag);
+            if(currentDayIndex === -1) currentDayIndex = 0;
+            
+            render();
+        }
+
+        function render() {
+            const currentTagNum = days[currentDayIndex];
+            const items = tripData.filter(i => parseInt(i["Tag#"]) === currentTagNum);
+            
+            // Header
+            document.getElementById('display-day').innerText = "Tag " + currentTagNum;
+            document.getElementById('display-date').innerText = items[0].Datum;
+            document.getElementById('display-region').innerText = items[0].Region;
+            document.getElementById('sunrise').innerText = items[0].Sunrise || "--:--";
+            document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
+
+            // Sektionen leeren
+            document.getElementById('day-alerts').innerHTML = "";
+            document.getElementById('sec-logistik').innerHTML = "";
+            document.getElementById('sec-aktiv').innerHTML = "";
+            document.getElementById('sec-foto').innerHTML = "";
+
+            items.forEach(item => {
+                const icon = icons[item.Typ] || "📍";
+                const card = createCard(item, icon);
+
+                // Typ "Alert" kommt immer nach oben
+                if (item.Typ === "Alert" || item.Risiko) {
+                    if (item.Typ === "Alert") {
+                        document.getElementById('day-alerts').appendChild(createAlertCard(item));
+                    }
+                }
+
+                if (item.Kategorie === "Logistik" && item.Typ !== "Alert") {
+                    document.getElementById('sec-logistik').appendChild(card);
+                } else if (item.Kategorie === "Aktivität") {
+                    document.getElementById('sec-aktiv').appendChild(card);
+                }
+
+                // Foto & Risiko-Details
+                if (item.Risiko || item["Shot idea"] || item.Objektiv) {
+                    document.getElementById('sec-foto').appendChild(createInfoCard(item));
+                }
+            });
+        }
+
+        function createCard(item, icon) {
             const div = document.createElement('div');
-            div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative";
-            const mapsQuery = encodeURIComponent(`${item.titel} ${item.region}`);
+            div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200";
             
             div.innerHTML = `
                 <div class="flex justify-between items-start">
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-3">
                         <span class="text-2xl">${icon}</span>
                         <div>
-                            <span class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">${item.typ}</span>
-                            <h3 class="font-bold text-slate-800 leading-tight">${item.titel}</h3>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold">${item.Typ}</span>
+                            <h3 class="font-bold text-slate-800 leading-tight">${item.Titel}</h3>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-blue-900">${item.start || ''}</p>
-                        <p class="text-[10px] text-slate-400">${item.ende ? 'bis ' + item.ende : ''}</p>
+                        <p class="font-bold text-blue-900">${item.Startzeit || ''}</p>
+                        <p class="text-[10px] text-slate-400 italic">${item.Dauer || ''}</p>
                     </div>
                 </div>
-                <p class="text-sm text-slate-500 mt-2 ml-8">${item.details || ''}</p>
-                <div class="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center ml-8">
-                    <span class="text-[10px] font-mono bg-slate-100 px-2 py-1 rounded">${item.code || '-'}</span>
-                    <a href="https://www.google.com/maps/search/?api=1&query=${mapsQuery}" 
-                       target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center">
-                        📍 Maps
-                    </a>
+                ${item.Details ? `<p class="text-sm text-slate-500 mt-2 ml-9">${item.Details}</p>` : ''}
+                <div class="mt-3 pt-3 border-t border-slate-50 flex justify-between items-center ml-9">
+                    <span class="text-[10px] font-mono text-slate-400">${item["Booking Code"] || item.Anbieter || ''}</span>
+                    ${item.Maps ? `<a href="${item.Maps}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold">📍 Maps</a>` : ''}
                 </div>
             `;
             return div;
         }
 
-        function createFotoCard(item) {
+        function createAlertCard(item) {
+            const div = document.createElement('div');
+            div.className = "alert-card p-3 rounded-r-xl shadow-md";
+            div.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span>⚠️</span>
+                    <h3 class="font-bold text-red-800 text-sm italic">${item.Risiko || item.Titel}</h3>
+                </div>
+            `;
+            return div;
+        }
+
+        function createInfoCard(item) {
             const div = document.createElement('div');
             div.className = "bg-slate-800 text-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500";
             div.innerHTML = `
-                <h3 class="font-bold text-orange-400 text-sm mb-1">📸 ${item.titel}</h3>
-                <p class="text-xs italic text-slate-300">"${item.shot_idea}"</p>
+                <h3 class="font-bold text-orange-400 text-xs mb-2 uppercase tracking-widest">${item.Titel}</h3>
+                ${item.Risiko ? `<p class="text-sm text-red-300 mb-2 font-bold">⚠️ ${item.Risiko}</p>` : ''}
+                ${item["Shot idea"] ? `<p class="text-xs italic text-slate-300">"📸 ${item["Shot idea"]}"</p>` : ''}
                 <div class="grid grid-cols-2 gap-2 mt-3 text-[10px]">
-                    <div class="bg-slate-700 p-2 rounded"><strong>Licht:</strong><br>${item.best_light || 'egal'}</div>
-                    <div class="bg-slate-700 p-2 rounded"><strong>Linse:</strong><br>${item.objektiv || 'Standard'}</div>
+                    ${item.Objektiv ? `<div class="bg-slate-700 p-2 rounded"><strong>Linse:</strong><br>${item.Objektiv}</div>` : ''}
+                    ${item["Bestes Licht"] ? `<div class="bg-slate-700 p-2 rounded"><strong>Licht:</strong><br>${item["Bestes Licht"]}</div>` : ''}
                 </div>
             `;
             return div;
@@ -177,7 +205,7 @@
         function switchTab(tab) {
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
             document.getElementById('btn-' + tab).classList.add('tab-active');
-            document.querySelectorAll('main > div:not(#risk-box)').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('main > div:not(#day-alerts)').forEach(s => s.classList.add('hidden'));
             document.getElementById('sec-' + tab).classList.remove('hidden');
         }
 
@@ -189,7 +217,11 @@
             }
         }
 
-        init();
+        // App Start
+        loadCSV();
+
+        // Offline Support
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     </script>
 </body>
 </html>
