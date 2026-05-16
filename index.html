@@ -21,7 +21,7 @@
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
     <!-- VOLLBILD OVERLAY -->
-    <div id="image-overlay" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-md text-center">
+    <div id="image-overlay" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm text-center">
         <img id="overlay-img" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl border border-white/20">
         <p class="absolute bottom-10 text-white/50 text-[10px] uppercase tracking-[0.3em]">Finger loslassen zum Schließen</p>
     </div>
@@ -79,7 +79,7 @@
         let tripData = [];
         let days = [];
         let currentDayIndex = 0;
-        let isPeeking = false; // Sperr-Variable für den Swipe
+        let isPeeking = false;
 
         const icons = {
             "Flug": "✈️", "Hotel": "🏨", "Taxi": "🚕", "Mietwagen": "🚗",
@@ -109,6 +109,15 @@
             });
         }
 
+        // Hilfsfunktion zur Zeit-Umwandlung für Sortierung
+        function timeToMinutes(timeStr) {
+            if (!timeStr || timeStr.trim() === "" || !timeStr.includes(':')) return 9999;
+            const parts = timeStr.split(':');
+            const hours = parseInt(parts[0], 10);
+            const minutes = parseInt(parts[1], 10);
+            return (hours * 60) + minutes;
+        }
+
         function processData() {
             days = [...new Set(tripData.map(item => parseInt(item["Tag#"])))].sort((a, b) => a - b);
             const now = new Date();
@@ -132,6 +141,9 @@
             const currentTagNum = days[currentDayIndex];
             const items = tripData.filter(i => parseInt(i["Tag#"]) === currentTagNum);
             if (items.length === 0) return;
+
+            // NEU: Einträge nach Uhrzeit sortieren (Aufsteigend)
+            items.sort((a, b) => timeToMinutes(a.Startzeit) - timeToMinutes(b.Startzeit));
             
             const rawRegion = items[0].Region || "Default";
             const regionKey = rawRegion.toLowerCase().trim();
@@ -143,7 +155,7 @@
             document.getElementById('sunset').innerText = items[0].Sunset || "--:--";
             document.getElementById('hero-img').src = regionImages[regionKey] || regionImages["default"];
 
-            // Unterkunft Logik mit Swipe-Schutz
+            // Unterkunft Logik
             const homeItem = items.find(i => i.Home && i.Home.trim() !== "");
             const homePreview = document.getElementById('home-preview');
             const homeImg = document.getElementById('home-img');
@@ -154,19 +166,8 @@
                 homePreview.classList.remove('hidden');
                 homeImg.src = homeItem.Home;
                 document.getElementById('home-title').innerText = homeItem.Hometitle || homeItem.Titel;
-
-                const showPeek = (e) => { 
-                    e.preventDefault(); 
-                    isPeeking = true; // Swipe sperren
-                    overlayImg.src = homeItem.Home; 
-                    overlay.classList.remove('hidden'); 
-                };
-                const hidePeek = () => {
-                    overlay.classList.add('hidden');
-                    // Kurze Verzögerung, damit der touchend-Event des Swipes ignoriert wird
-                    setTimeout(() => { isPeeking = false; }, 100);
-                };
-                
+                const showPeek = (e) => { e.preventDefault(); isPeeking = true; overlayImg.src = homeItem.Home; overlay.classList.remove('hidden'); };
+                const hidePeek = () => { overlay.classList.add('hidden'); setTimeout(() => { isPeeking = false; }, 100); };
                 homeImg.onmousedown = showPeek;
                 homeImg.ontouchstart = showPeek;
                 window.onmouseup = hidePeek;
@@ -259,7 +260,7 @@
             }
         }
 
-        // SWIPE LOGIK MIT PEERING-SCHUTZ
+        // SWIPE LOGIK
         let startX = 0;
         let startY = 0;
 
@@ -269,21 +270,11 @@
         }, { passive: true });
 
         document.addEventListener('touchend', (e) => {
-            // Wenn wir gerade ein Bild ansehen, brechen wir den Swipe ab
             if (isPeeking) return;
-
             let endX = e.changedTouches[0].clientX;
             let endY = e.changedTouches[0].clientY;
             let diffX = startX - endX;
             let diffY = startY - endY;
-
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 70) {
                 if (diffX > 0) changeDay(1);
                 else changeDay(-1);
-            }
-        }, { passive: true });
-
-        loadCSV();
-    </script>
-</body>
-</html>
