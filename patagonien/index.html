@@ -14,10 +14,10 @@
         .glass-nav { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0) 20%, rgba(15,23,42,0) 50%, rgba(15,23,42,0.9) 100%); }
         
-        /* Aggressiver Fade-Out Effekt: Karten verschwinden weit vor dem Header */
+        /* Fade-Out Effekt für die scrollende Liste */
         .fade-mask {
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 200px, black 350px);
-            mask-image: linear-gradient(to bottom, transparent 0%, transparent 200px, black 350px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 220px, black 380px, black calc(100% - 120px), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, transparent 220px, black 380px, black calc(100% - 120px), transparent 100%);
         }
 
         .snap-x { scroll-snap-type: x mandatory; scrollbar-width: none; }
@@ -69,32 +69,31 @@
     <header class="fixed top-0 inset-x-0 z-[100] p-6 pt-10 pointer-events-none">
         <div class="max-w-md mx-auto flex justify-between items-start">
             
-            <!-- Left Block: Title, Region, Day+Date, Sun -->
             <div id="trip-title-trigger" class="flex-1 pointer-events-auto active:opacity-50 transition-opacity">
                 <div id="display-trip-name" class="text-blue-400 text-[10px] font-black tracking-[0.4em] uppercase mb-1 drop-shadow-md">TRIP</div>
                 <h1 id="display-region" class="text-3xl font-black tracking-tighter uppercase italic leading-tight text-white drop-shadow-2xl">Lade...</h1>
                 
                 <div class="flex flex-col gap-1.5 mt-3">
-                    <!-- Day & Date in one line -->
-                    <div class="flex items-center gap-2 text-[11px] font-bold text-white/90 tracking-wide uppercase">
+                    <!-- Day & Date (Gefettet & Größer) -->
+                    <div class="flex items-center gap-2 text-[14px] font-black text-white tracking-wide uppercase">
                         <span id="display-day-label">Tag -</span>
                         <span class="opacity-30">•</span>
                         <span id="display-date">--. ---</span>
                     </div>
                     
-                    <!-- Sun Info with Minimal Icon -->
-                    <div class="flex items-center gap-2.5 text-[10px] font-bold text-white/50 font-mono tracking-tight">
-                        <svg class="w-3 h-3 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Sun Info (Gefettet & Größer) -->
+                    <div class="flex items-center gap-3 text-[12px] font-bold text-white/70 font-mono tracking-tight mt-0.5">
+                        <svg class="w-3.5 h-3.5 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="5" stroke-width="2.5"></circle>
                             <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-width="2.5" stroke-linecap="round"></path>
                         </svg>
-                        <span class="flex items-center gap-1">↑ <span id="sunrise">--:--</span></span>
-                        <span class="flex items-center gap-1">↓ <span id="sunset">--:--</span></span>
+                        <span class="flex items-center gap-1.5">↑ <span id="sunrise">--:--</span></span>
+                        <span class="flex items-center gap-1.5">↓ <span id="sunset">--:--</span></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Side: Hotel Preview (Aligned with top of Region) -->
+            <!-- Right Side: Hotel Preview (Top Aligned) -->
             <div id="home-preview" class="hidden pointer-events-auto flex flex-col items-end">
                 <img id="home-img" src="" class="w-24 h-24 object-cover rounded-3xl border-2 border-white/20 shadow-2xl bg-slate-800">
                 <div class="text-[8px] font-black uppercase text-right mt-2 text-white/40 truncate w-24 tracking-widest" id="home-title">Hotel</div>
@@ -102,8 +101,8 @@
         </div>
     </header>
 
-    <!-- SCROLLABLE LIST -->
-    <div id="scroll-container" class="relative z-10 w-full h-screen overflow-y-auto pt-[280px] pb-40 px-6 fade-mask">
+    <!-- SCROLLABLE CONTENT -->
+    <div id="scroll-container" class="relative z-10 w-full h-screen overflow-y-auto pt-[340px] pb-48 px-6 fade-mask">
         <div class="max-w-md mx-auto">
             <div id="sec-alerts" class="space-y-3 mb-6"></div>
             <div id="sec-fixtermine" class="space-y-4"></div>
@@ -111,10 +110,23 @@
         </div>
     </div>
 
-    <!-- Floating Activity Hub -->
-    <button onclick="openActivityHub()" class="fixed bottom-8 right-6 z-[150] bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border-4 border-white/20">
-        🗺️
-    </button>
+    <!-- BOTTOM NAVIGATION BAR (Date Switcher + Explore) -->
+    <nav class="fixed bottom-6 inset-x-0 z-[150] px-6 pointer-events-none">
+        <div class="max-w-md mx-auto flex justify-between items-center pointer-events-auto">
+            
+            <!-- Date Switcher Pill -->
+            <div class="glass-nav flex items-center p-1.5 rounded-2xl shadow-2xl border border-white/10">
+                <button onclick="changeDay(-1)" class="w-12 h-12 flex items-center justify-center text-xl text-white active:scale-75 transition-transform">◀</button>
+                <div class="w-px h-6 bg-white/10 mx-1"></div>
+                <button onclick="changeDay(1)" class="w-12 h-12 flex items-center justify-center text-xl text-white active:scale-75 transition-transform">▶</button>
+            </div>
+
+            <!-- Unified Explore Button -->
+            <button onclick="openActivityHub()" class="bg-blue-600 text-white w-16 h-16 rounded-2xl shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border-2 border-white/20 shadow-blue-500/20">
+                🗺️
+            </button>
+        </div>
+    </nav>
 
     <script>
         let tripData = [], spotData = [], hikeData = [], days = [], currentDayIndex = 0, isPeeking = false;
@@ -166,7 +178,10 @@
             document.getElementById('display-region').innerText = region;
             document.getElementById('sunrise').innerText = getVal(first, "Sunrise") || "--:--";
             document.getElementById('sunset').innerText = getVal(first, "Sunset") || "--:--";
-            document.getElementById('hero-img').src = regionImages[regionKey] || `https://source.unsplash.com/featured/1200x900?landscape,${encodeURIComponent(region)}`;
+
+            let bgUrl = getVal(first, "RegionImage");
+            if (!bgUrl) bgUrl = regionImages[regionKey] || `https://source.unsplash.com/featured/1200x900?landscape,${encodeURIComponent(region)}`;
+            document.getElementById('hero-img').src = bgUrl;
 
             const path = window.location.pathname.split('/');
             document.getElementById('display-trip-name').innerText = path[path.length - 2].toUpperCase();
@@ -174,69 +189,33 @@
             const alertCont = document.getElementById('sec-alerts');
             const fixCont = document.getElementById('sec-fixtermine');
             alertCont.innerHTML = ""; fixCont.innerHTML = "";
-
-            if(items.length === 0) document.getElementById('empty-state').classList.remove('hidden');
-            else document.getElementById('empty-state').classList.add('hidden');
+            if(items.length === 0) document.getElementById('empty-state').classList.remove('hidden'); else document.getElementById('empty-state').classList.add('hidden');
 
             items.forEach(item => {
-                const type = getVal(item, "Typ").toLowerCase();
-                const icon = icons[type] || "📍";
-                const start = getVal(item, "Startzeit");
-                const maps = getVal(item, "Maps");
-
+                const type = getVal(item, "Typ").toLowerCase(), icon = icons[type] || "📍", start = getVal(item, "Startzeit"), maps = getVal(item, "Maps");
                 if (type === "alert" || getVal(item, "Risiko")) {
-                    const d = document.createElement('div');
-                    d.className = "glass-alert p-5 shadow-lg mb-3";
+                    const d = document.createElement('div'); d.className = "glass-alert p-5 shadow-lg mb-3";
                     d.innerHTML = `<div class="flex items-center gap-4"><span>⚠️</span><div><p class="text-[10px] font-black uppercase text-red-200">Alert</p><p class="text-sm font-bold text-white">${getVal(item, "Titel")} ${getVal(item, "Risiko") ? ' - ' + getVal(item, "Risiko") : ''}</p></div></div>`;
                     alertCont.appendChild(d);
                 }
-
                 if (start || getVal(item, "Kategorie").toLowerCase() === 'logistik') {
                     if (type === "alert") return;
-                    const d = document.createElement('div');
-                    d.className = "glass-card p-5 shadow-xl mb-4";
-                    d.innerHTML = `
-                        <div class="flex items-center gap-5 mb-3">
-                            <div class="text-4xl">${icon}</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">${getVal(item, "Typ")}</p>
-                                <h3 class="font-bold text-white truncate text-base">${getVal(item, "Titel")}</h3>
-                            </div>
-                            <div class="text-right flex-shrink-0">
-                                <p class="text-base font-black text-white font-mono">${start}</p>
-                                <p class="text-[9px] text-white/30 font-bold uppercase font-mono">${getVal(item, "Dauer")}</p>
-                            </div>
-                        </div>
-                        <p class="text-xs text-white/40 truncate italic mb-4 ml-14">${getVal(item, "Details")}</p>
-                        <div class="flex justify-between items-center ml-14 pt-3 border-t border-white/5">
-                            ${maps ? `<a href="${maps}" target="_blank" class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest shadow-lg">📍 MAPS</a>` : '<span></span>'}
-                            <span class="text-[9px] font-mono text-white/20 uppercase">${getVal(item, "BookingCode") || getVal(item, "Anbieter") || ""}</span>
-                        </div>`;
+                    const d = document.createElement('div'); d.className = "glass-card p-5 shadow-xl mb-4";
+                    d.innerHTML = `<div class="flex items-center gap-5 mb-3"><div class="text-4xl">${icon}</div><div class="flex-1 min-w-0"><p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">${getVal(item, "Typ")}</p><h3 class="font-bold text-white truncate text-base">${getVal(item, "Titel")}</h3></div><div class="text-right flex-shrink-0"><p class="text-base font-black text-white font-mono">${start}</p><p class="text-[9px] text-white/30 font-bold uppercase font-mono">${getVal(item, "Dauer")}</p></div></div><p class="text-xs text-white/40 truncate italic mb-4 ml-14 font-sans font-medium tracking-wide">${getVal(item, "Details")}</p><div class="flex justify-between items-center ml-14 pt-3 border-t border-white/5 font-bold">${maps ? `<a href="${maps}" target="_blank" class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest shadow-lg">📍 MAPS</a>` : '<span></span>'}<span class="text-[9px] font-mono text-white/20 uppercase">${getVal(item, "BookingCode") || getVal(item, "Anbieter") || ""}</span></div>`;
                     fixCont.appendChild(d);
                 }
             });
 
-            // Hotel Peek Logic
             const homeItem = items.find(i => getVal(i, "Home") !== "");
-            const hImg = document.getElementById('home-img');
-            const hPre = document.getElementById('home-preview');
-            const overlay = document.getElementById('image-overlay');
-            const overImg = document.getElementById('overlay-img');
-
+            const hImg = document.getElementById('home-img'), hPre = document.getElementById('home-preview'), overlay = document.getElementById('image-overlay'), overImg = document.getElementById('overlay-img');
             if(homeItem) {
-                hPre.classList.remove('hidden');
-                hImg.src = getVal(homeItem, "Home");
-                document.getElementById('home-title').innerText = getVal(homeItem, "Hometitle") || getVal(homeItem, "Titel");
-                
+                hPre.classList.remove('hidden'); hImg.src = getVal(homeItem, "Home"); document.getElementById('home-title').innerText = getVal(homeItem, "Hometitle") || getVal(homeItem, "Titel");
                 const startPeek = (e) => { e.preventDefault(); isPeeking = true; overImg.src = getVal(homeItem, "Home"); overlay.classList.remove('hidden'); };
                 const endPeek = () => { overlay.classList.add('hidden'); setTimeout(() => isPeeking = false, 100); };
-                
-                hImg.onmousedown = startPeek; hImg.ontouchstart = startPeek;
-                window.onmouseup = endPeek; window.ontouchend = endPeek;
+                hImg.onmousedown = startPeek; hImg.ontouchstart = startPeek; window.onmouseup = endPeek; window.ontouchend = endPeek;
             } else hPre.classList.add('hidden');
         }
 
-        // SWIPE DAY CHANGE
         let sX = 0, sY = 0;
         document.addEventListener('touchstart', e => { sX = e.touches[0].clientX; sY = e.touches[0].clientY; }, { passive: true });
         document.addEventListener('touchend', e => {
@@ -246,7 +225,6 @@
             if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 80) changeDay(dX > 0 ? 1 : -1);
         }, { passive: true });
 
-        // ACTIVITY HUB
         function openActivityHub() { renderActivitySlider('all'); document.getElementById('activity-overlay').classList.remove('hidden'); }
         function renderActivitySlider(f) {
             const region = document.getElementById('display-region').innerText.toLowerCase().trim();
@@ -257,7 +235,7 @@
             combined.forEach(item => {
                 const isH = item.cat === 'hiking', id = getVal(item, "Title"), done = (localStorage.getItem('done_items') || '[]').includes(id);
                 const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`;
-                card.innerHTML = `<img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl">${getVal(item, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest"><span class="bg-white/10 px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed">"${getVal(item, "Details")}"</p><div class="flex items-center gap-3"><a href="${isH ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl font-sans">✓</button></div></div>`;
+                card.innerHTML = `<img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl font-bold">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl">${getVal(item, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest"><span class="bg-white/10 px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed font-sans">"${getVal(item, "Details")}"</p><div class="flex items-center gap-3"><a href="${isH ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl font-sans">✓</button></div></div>`;
                 slider.appendChild(card);
             });
         }
@@ -265,7 +243,6 @@
         function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
         function changeDay(d) { if (days[currentDayIndex + d]) { currentDayIndex += d; render(); document.getElementById('scroll-container').scrollTo(0,0); } }
 
-        // Home Long Press
         let pressTimer;
         const trigger = document.getElementById('trip-title-trigger');
         trigger.onmousedown = () => pressTimer = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600);
