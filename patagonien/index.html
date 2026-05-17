@@ -9,120 +9,126 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         .hidden { display: none !important; }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.15); }
-        .glass-dark { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glass-alert { background: rgba(239, 68, 68, 0.2); backdrop-filter: blur(15px); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.3) 0%, rgba(15,23,42,0.6) 50%, rgba(15,23,42,0.9) 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; }
+        .glass-alert { background: rgba(239, 68, 68, 0.25); backdrop-filter: blur(12px); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 20px; }
+        .glass-nav { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.6) 0%, rgba(15,23,42,0) 30%, rgba(15,23,42,0.8) 100%); }
         .spot-text-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); }
         
-        body { background-color: #0f172a; color: #f8fafc; overscroll-behavior-y: contain; }
-        
-        /* Layout Fixes */
-        .main-scroll-area { padding-top: 130px; position: relative; z-index: 10; width: 100%; max-width: 500px; margin: 0 auto; }
-        
-        /* Unified Carousel Snap */
         .snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .snap-x::-webkit-scrollbar { display: none; }
         .snap-center { scroll-snap-align: center; scroll-snap-stop: always; }
-        .item-done img { filter: grayscale(0.8) brightness(0.4); }
-
         .calendar-mini { background: white; border-radius: 8px; padding: 2px 8px; display: flex; flex-direction: column; align-items: center; scale: 0.9; }
+        
+        body { background-color: #0f172a; color: #f8fafc; overscroll-behavior-y: contain; }
+        .item-done img { filter: grayscale(0.8) brightness(0.4); }
     </style>
 </head>
 <body class="font-sans overflow-x-hidden">
 
-    <!-- UNIFIED ACTIVITY HUB (Overlays Hikes & Spots) -->
-    <div id="activity-overlay" class="hidden fixed inset-0 z-[200] bg-black flex flex-col font-sans">
+    <!-- HOME MODAL (Long Press Trigger) -->
+    <div id="home-modal" class="hidden fixed inset-0 z-[210] bg-slate-950/80 backdrop-blur-md items-center justify-center p-8" onclick="this.classList.remove('open')">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-xs text-center shadow-2xl" onclick="event.stopPropagation()">
+            <div class="text-4xl mb-4 text-slate-800">🏠</div>
+            <h2 class="text-xl font-bold mb-2 text-slate-800">Trip wechseln</h2>
+            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold mb-3 shadow-lg">Zum Hauptmenü</button>
+            <button onclick="document.getElementById('home-modal').classList.remove('open')" class="w-full py-3 text-slate-400 font-medium">Abbrechen</button>
+        </div>
+    </div>
+
+    <!-- ACTIVITY OVERLAY -->
+    <div id="activity-overlay" class="hidden fixed inset-0 z-[200] bg-black flex flex-col">
         <div class="p-6 flex justify-between items-center z-30">
             <div class="flex gap-2">
-                <button onclick="renderActivitySlider('all')" class="glass px-4 py-2 rounded-xl text-[10px] font-bold text-white uppercase tracking-widest border-blue-500">Alle</button>
-                <button onclick="renderActivitySlider('hiking')" class="glass p-2 rounded-xl text-xl">🥾</button>
-                <button onclick="renderActivitySlider('photo')" class="glass p-2 rounded-xl text-xl">📸</button>
+                <button onclick="renderActivitySlider('all')" class="glass-nav px-4 py-2 rounded-xl text-[10px] font-bold text-white uppercase tracking-widest border-blue-500">Alle</button>
+                <button onclick="renderActivitySlider('hiking')" class="glass-nav p-2 rounded-xl text-xl">🥾</button>
+                <button onclick="renderActivitySlider('photo')" class="glass-nav p-2 rounded-xl text-xl">📸</button>
             </div>
-            <button onclick="closeOverlay('activity-overlay')" class="glass w-12 h-12 rounded-full flex items-center justify-center text-3xl text-white">&times;</button>
+            <button onclick="closeOverlay('activity-overlay')" class="glass-nav w-12 h-12 rounded-full flex items-center justify-center text-3xl text-white font-bold">&times;</button>
         </div>
         <div id="unified-slider" class="flex-1 flex overflow-x-auto snap-x h-full"></div>
     </div>
 
-    <!-- HOME MODAL -->
-    <div id="home-modal" class="hidden fixed inset-0 z-[210] bg-slate-950/80 backdrop-blur-md items-center justify-center p-8 font-sans" onclick="this.classList.remove('open')">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-xs text-center shadow-2xl" onclick="event.stopPropagation()">
-            <div class="text-4xl mb-4 text-slate-800">🏠</div>
-            <h2 class="text-xl font-bold mb-2 text-slate-800 font-sans">Reise wechseln</h2>
-            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold mb-3 shadow-lg font-sans">Zum Hauptmenü</button>
-            <button onclick="document.getElementById('home-modal').classList.remove('open')" class="w-full py-3 text-slate-400 font-medium font-sans">Abbrechen</button>
-        </div>
-    </div>
-
     <!-- PEEK OVERLAY -->
-    <div id="image-overlay" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"><img id="overlay-img" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl"></div>
+    <div id="image-overlay" class="hidden fixed inset-0 z-[150] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"><img id="overlay-img" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl border border-white/20"></div>
 
-    <!-- FIXED BACKGROUND -->
+    <!-- BACKGROUND -->
     <div class="fixed inset-0 z-0">
         <img id="hero-img" src="" class="w-full h-full object-cover opacity-60">
         <div class="absolute inset-0 hero-gradient"></div>
     </div>
 
-    <!-- TOP GLASS COMMAND BAR -->
-    <header class="fixed top-0 inset-x-0 z-[100] glass-dark p-4 font-sans">
-        <div class="max-w-md mx-auto flex flex-col gap-3">
-            <!-- Row 1: Home, Trip, Date -->
+    <!-- CONTENT SCROLL AREA -->
+    <div class="relative z-10 w-full min-h-screen">
+        
+        <!-- HEADER INFO -->
+        <header class="p-6 pt-4 flex flex-col gap-6">
+            <!-- Top Line: Home & Date -->
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3" id="trip-title-trigger">
-                    <button onclick="window.location.href='../index.html'" class="text-xl">🏠</button>
-                    <span class="text-blue-400 text-xs font-black tracking-[0.2em] uppercase font-sans" id="display-trip-name text-white">TRIP</span>
-                </div>
+                <button onclick="window.location.href='../index.html'" class="text-2xl drop-shadow-lg">🏠</button>
                 
-                <div class="glass px-2 py-1 rounded-full flex items-center gap-3">
-                    <button onclick="changeDay(-1)" class="w-6 h-6 flex items-center justify-center text-sm">◀</button>
+                <div class="glass-nav px-2 py-1.5 rounded-2xl flex items-center gap-2">
+                    <button onclick="changeDay(-1)" class="w-8 h-8 flex items-center justify-center text-lg active:scale-75">◀</button>
                     <div class="calendar-mini">
-                        <span id="display-day-num" class="text-slate-900 text-sm font-black leading-none">--</span>
-                        <span id="display-month" class="text-red-500 text-[7px] font-black uppercase">---</span>
+                        <span id="display-day-num" class="text-slate-900 text-lg font-black leading-none">--</span>
+                        <span id="display-month" class="text-red-500 text-[8px] font-black uppercase">---</span>
                     </div>
-                    <button onclick="changeDay(1)" class="w-6 h-6 flex items-center justify-center text-sm">▶</button>
+                    <button onclick="changeDay(1)" class="w-8 h-8 flex items-center justify-center text-lg active:scale-75">▶</button>
                 </div>
             </div>
 
-            <!-- Row 2: Region & Sun -->
-            <div class="flex justify-between items-center">
-                <div>
-                    <span id="display-day-label" class="text-[9px] font-bold text-white/50 block tracking-widest uppercase">Tag -</span>
-                    <h1 id="display-region" class="text-lg font-black tracking-tight uppercase italic leading-none text-white">Lade...</h1>
-                </div>
-                <div class="flex items-center gap-3 text-[10px] font-bold text-white/80 glass px-3 py-1.5 rounded-lg">
-                    <span>🌅 <span id="sunrise">--:--</span></span>
+            <!-- Trip Info Cluster (Long Press Trigger) -->
+            <div id="trip-title-trigger" class="flex flex-col gap-1 active:opacity-60 transition-opacity">
+                <div id="display-trip-name" class="text-blue-400 text-xs font-black tracking-[0.3em] uppercase">TRIP</div>
+                <h1 id="display-region" class="text-4xl font-black tracking-tighter uppercase italic leading-tight text-white drop-shadow-2xl">Lade...</h1>
+                <div id="display-day-label" class="text-white/60 text-sm font-bold tracking-widest uppercase">Tag -</div>
+            </div>
+
+            <!-- Sun & Hotel Section -->
+            <div class="flex justify-between items-end">
+                <div class="flex items-center gap-3 text-[10px] font-bold text-white/90 glass-nav px-3 py-2 rounded-xl">
+                    <span class="flex items-center gap-1.5">🌅 <span id="sunrise">--:--</span></span>
                     <span class="opacity-20">|</span>
-                    <span>🌇 <span id="sunset">--:--</span></span>
+                    <span class="flex items-center gap-1.5">🌇 <span id="sunset">--:--</span></span>
+                </div>
+
+                <div id="home-preview" class="hidden">
+                    <img id="home-img" src="" class="w-24 h-20 object-cover rounded-2xl border-2 border-white/30 shadow-2xl bg-slate-800">
+                    <div class="text-[8px] font-black uppercase text-right mt-1 text-white/70 truncate w-24" id="home-title">Hotel</div>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- SCROLLABLE LIST OF GLASS CARDS -->
-    <div class="main-scroll-area p-6 space-y-4">
-        <!-- Alerts come first -->
-        <div id="sec-alerts" class="space-y-3 mb-6"></div>
-        
-        <h2 class="text-white/30 text-[10px] font-black uppercase tracking-[0.3em] mb-4">Fixe Termine</h2>
-        <div id="sec-fixtermine" class="space-y-4"></div>
-        
-        <div id="logistik-empty" class="hidden py-10 text-center text-slate-500 italic text-sm">
-            Keine Termine für heute.
+        <!-- CARDS AREA (Timed Events & Alerts) -->
+        <div class="p-6 space-y-4">
+            <div id="sec-alerts" class="space-y-3"></div>
+            <div id="sec-fixtermine" class="space-y-4"></div>
+            
+            <div id="empty-state" class="hidden py-20 text-center text-white/20 italic text-sm">
+                Keine Termine für heute.
+            </div>
         </div>
     </div>
 
-    <!-- Floating Activity Hub Button -->
-    <button onclick="openActivityHub()" class="fixed bottom-8 right-6 z-[100] bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border-4 border-white/20">
+    <!-- Floating Activity Hub -->
+    <button onclick="openActivityHub()" class="fixed bottom-6 right-6 z-[100] bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border-4 border-white/20">
         🗺️
     </button>
 
     <script>
         let tripData = [], spotData = [], hikeData = [], days = [], currentDayIndex = 0, isPeeking = false;
         const icons = { "flug": "✈️", "hotel": "🏨", "taxi": "🚕", "mietwagen": "🚗", "bus": "🚌", "alert": "⚠️", "restaurant": "🍽️" };
+        
+        const regionImages = { 
+            "buenos aires": "https://images.pexels.com/photos/34104156/pexels-photo-34104156.jpeg?auto=format&fit=crop&w=800&q=80", 
+            "el calafate argentinien": "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=format&fit=crop&w=800&q=80", 
+            "torres del paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80", 
+            "san pedro de atacama": "https://images.pexels.com/photos/20853000/pexels-photo-20853000.jpeg?auto=format&fit=crop&w=800&q=80",
+            "default": "https://images.pexels.com/photos/20890197/pexels-photo-20890197.jpeg?auto=format&fit=crop&w=800&q=80"
+        };
 
         function getVal(obj, key) { 
             if (!obj) return ""; 
-            const foundKey = Object.keys(obj).find(k => k.toLowerCase().trim().replace(/\s/g, '') === key.toLowerCase().trim().replace(/\s/g, ''));
+            const foundKey = Object.keys(obj).find(k => k.toLowerCase().trim().replace(' ', '') === key.toLowerCase().trim().replace(' ', ''));
             return foundKey ? obj[foundKey].toString().trim() : ""; 
         }
 
@@ -139,8 +145,6 @@
             }});
         }
 
-        function timeToMinutes(t) { if (!t || !t.includes(':')) return 9999; const p = t.split(':'); return (parseInt(p[0]) * 60) + parseInt(p[1]); }
-
         function processData() {
             if (tripData.length === 0) return;
             days = [...new Set(tripData.map(item => parseInt(getVal(item, "Tag#"))))].filter(n => !isNaN(n)).sort((a, b) => a - b);
@@ -155,10 +159,15 @@
         function render() {
             const currentTagNum = days[currentDayIndex];
             const items = tripData.filter(i => parseInt(getVal(i, "Tag#")) === currentTagNum);
-            items.sort((a, b) => timeToMinutes(getVal(a, "Startzeit")) - timeToMinutes(getVal(b, "Startzeit")));
+            items.sort((a, b) => {
+                const timeA = getVal(a, "Startzeit");
+                const timeB = getVal(b, "Startzeit");
+                if (!timeA) return 1; if (!timeB) return -1;
+                return timeA.localeCompare(timeB);
+            });
             
             const first = items[0] || {};
-            const region = getVal(first, "Region") || "Nature";
+            const region = getVal(first, "Region") || "Nature", regionKey = region.toLowerCase().trim();
             const dateStr = getVal(first, "Datum") || "--. ---";
 
             document.getElementById('display-day-label').innerText = "TAG " + currentTagNum;
@@ -167,123 +176,89 @@
             document.getElementById('display-region').innerText = region;
             document.getElementById('sunrise').innerText = getVal(first, "Sunrise") || "--:--";
             document.getElementById('sunset').innerText = getVal(first, "Sunset") || "--:--";
-            document.getElementById('hero-img').src = `https://source.unsplash.com/featured/1200x900?landscape,${encodeURIComponent(region)}`;
+            document.getElementById('hero-img').src = regionImages[regionKey] || regionImages["default"];
 
             const path = window.location.pathname.split('/');
             document.getElementById('display-trip-name').innerText = path[path.length - 2].toUpperCase();
 
-            // Clear containers
-            const alertContainer = document.getElementById('sec-alerts');
-            const fixContainer = document.getElementById('sec-fixtermine');
-            alertContainer.innerHTML = "";
-            fixContainer.innerHTML = "";
+            // Render Timed Cards
+            const alertCont = document.getElementById('sec-alerts');
+            const fixCont = document.getElementById('sec-fixtermine');
+            alertCont.innerHTML = ""; fixCont.innerHTML = "";
 
-            if(items.length === 0) document.getElementById('logistik-empty').classList.remove('hidden');
-            else document.getElementById('logistik-empty').classList.add('hidden');
+            if(items.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+            else document.getElementById('empty-state').classList.add('hidden');
 
             items.forEach(item => {
                 const type = getVal(item, "Typ").toLowerCase();
                 const risiko = getVal(item, "Risiko");
                 const icon = icons[type] || "📍";
+                const start = getVal(item, "Startzeit");
 
-                // 1. Render Alerts (Priority)
                 if (type === "alert" || risiko !== "") {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = "glass-alert p-4 rounded-2xl border-l-4 border-red-500 shadow-lg";
-                    alertDiv.innerHTML = `<div class="flex items-center gap-3"><span>⚠️</span><div><p class="text-[10px] font-black uppercase text-red-300">Wichtig</p><p class="text-sm font-bold">${getVal(item, "Titel")} ${risiko ? ': ' + risiko : ''}</p></div></div>`;
-                    alertContainer.appendChild(alertDiv);
+                    const d = document.createElement('div');
+                    d.className = "glass-alert p-4 shadow-lg";
+                    d.innerHTML = `<div class="flex items-center gap-3"><span>⚠️</span><div><p class="text-[10px] font-black uppercase text-red-200 tracking-widest">Wichtig</p><p class="text-sm font-bold text-white">${getVal(item, "Titel")} ${risiko ? ' - ' + risiko : ''}</p></div></div>`;
+                    alertCont.appendChild(d);
                 }
 
-                // 2. Render timed Logistics
-                if (type !== "alert") {
-                    const card = document.createElement('div');
-                    card.className = "glass p-4 rounded-2xl flex items-center gap-4 shadow-xl";
-                    card.innerHTML = `
+                if (start || getVal(item, "Kategorie").toLowerCase() === 'logistik') {
+                    if (type === "alert") return;
+                    const d = document.createElement('div');
+                    d.className = "glass-card p-5 flex items-center gap-4 shadow-xl";
+                    d.innerHTML = `
                         <div class="text-3xl">${icon}</div>
-                        <div class="flex-1 min-w-0 font-sans">
-                            <p class="text-[9px] font-bold text-blue-400 uppercase tracking-widest">${getVal(item, "Typ")}</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[9px] font-black text-blue-300 uppercase tracking-widest">${getVal(item, "Typ")}</p>
                             <h3 class="font-bold text-white truncate text-sm">${getVal(item, "Titel")}</h3>
-                            <p class="text-xs text-white/50 truncate italic">${getVal(item, "Details")}</p>
+                            <p class="text-xs text-white/40 truncate italic">${getVal(item, "Details")}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-black text-white">${getVal(item, "Startzeit")}</p>
-                            <p class="text-[9px] text-white/30 font-bold">${getVal(item, "Dauer")}</p>
-                        </div>
-                    `;
-                    fixContainer.appendChild(card);
+                            <p class="text-sm font-black text-white">${start}</p>
+                            <p class="text-[9px] text-white/30 font-bold uppercase">${getVal(item, "Dauer")}</p>
+                        </div>`;
+                    fixCont.appendChild(d);
                 }
             });
+
+            // Hotel Peek logic
+            const homeItem = items.find(i => getVal(i, "Home") !== "");
+            if(homeItem) {
+                document.getElementById('home-preview').classList.remove('hidden');
+                document.getElementById('home-img').src = getVal(homeItem, "Home");
+                document.getElementById('home-title').innerText = getVal(homeItem, "Hometitle") || getVal(homeItem, "Titel");
+                const showP = (e) => { e.preventDefault(); isPeeking = true; document.getElementById('overlay-img').src = getVal(homeItem, "Home"); document.getElementById('image-overlay').classList.remove('hidden'); };
+                const hideP = () => { document.getElementById('image-overlay').classList.add('hidden'); setTimeout(() => isPeeking = false, 100); };
+                document.getElementById('home-img').onmousedown = showP; document.getElementById('home-img').ontouchstart = showP; window.onmouseup = hideP; window.ontouchend = hideP;
+            } else document.getElementById('home-preview').classList.add('hidden');
         }
 
-        // EXPLORATION HUB ENGINE
-        function openActivityHub() {
-            renderActivitySlider('all');
-            document.getElementById('activity-overlay').classList.remove('hidden');
-        }
-
-        function renderActivitySlider(filter) {
+        // UNIFIED HUB
+        function openActivityHub() { renderActivitySlider('all'); document.getElementById('activity-overlay').classList.remove('hidden'); }
+        function renderActivitySlider(f) {
             const region = document.getElementById('display-region').innerText.toLowerCase().trim();
-            let hikes = hikeData.filter(h => getVal(h, "Region").toLowerCase().includes(region)).map(i => ({...i, type: 'hiking'}));
-            let spots = spotData.filter(s => getVal(s, "Region").toLowerCase().includes(region)).map(i => ({...i, type: 'photo'}));
-            
-            let combined = [];
-            if (filter === 'all') combined = [...hikes, ...spots];
-            else if (filter === 'hiking') combined = hikes;
-            else if (filter === 'photo') combined = spots;
-
-            const slider = document.getElementById('unified-slider');
-            slider.innerHTML = "";
-
-            if(combined.length === 0) {
-                slider.innerHTML = `<div class="flex-1 flex items-center justify-center text-white/30 italic">Keine Aktivitäten für diese Region.</div>`;
-                return;
-            }
-
+            let h = hikeData.filter(h => getVal(h, "Region").toLowerCase().includes(region)).map(i => ({...i, cat: 'hiking'}));
+            let s = spotData.filter(s => getVal(s, "Region").toLowerCase().includes(region)).map(i => ({...i, cat: 'photo'}));
+            let combined = f === 'all' ? [...h, ...s] : (f === 'hiking' ? h : s);
+            const slider = document.getElementById('unified-slider'); slider.innerHTML = "";
             combined.forEach(item => {
-                const isHike = item.type === 'hiking';
-                const id = getVal(item, "Title");
-                const done = (localStorage.getItem('done_items') || '[]').includes(id);
-
-                const card = document.createElement('div');
-                card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`;
-                card.innerHTML = `
-                    <img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover">
-                    <div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest font-sans">
-                        <div class="${isHike ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px]">
-                            ${isHike ? '🥾 HIKE' : '📸 PHOTO'}
-                        </div>
-                    </div>
-                    <div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20">
-                        <h3 class="text-4xl font-black text-white leading-tight mb-3 drop-shadow-2xl font-sans">${getVal(item, "Title")}</h3>
-                        ${isHike ? `<div class="flex gap-3 mb-4 text-white font-mono text-[10px] font-bold uppercase tracking-tighter italic">
-                            <span class="bg-white/20 px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span>
-                            <span class="bg-white/20 px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span>
-                        </div>` : ''}
-                        <p class="text-white/80 text-sm mb-8 italic drop-shadow-lg leading-relaxed font-sans">"${getVal(item, "Details")}"</p>
-                        <div class="flex items-center gap-3">
-                            <a href="${isHike ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans">
-                                ${isHike ? '🗺️ Komoot' : '📍 Standort'}
-                            </a>
-                            <button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all font-sans font-sans">✓</button>
-                        </div>
-                    </div>
-                `;
+                const isH = item.cat === 'hiking', id = getVal(item, "Title"), done = (localStorage.getItem('done_items') || '[]').includes(id);
+                const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`;
+                card.innerHTML = `<img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl">${getVal(item, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest"><span class="bg-white/10 px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed">"${getVal(item, "Details")}"</p><div class="flex items-center gap-3"><a href="${isH ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl font-sans">✓</button></div></div>`;
                 slider.appendChild(card);
             });
         }
-
-        function toggleGlobalDone(id) {
-            let d = JSON.parse(localStorage.getItem('done_items') || '[]');
-            if (d.includes(id)) d = d.filter(x => x !== id); else d.push(id);
-            localStorage.setItem('done_items', JSON.stringify(d));
-            const activeFilter = document.querySelector('#carousel-filters .border-blue-500')?.innerText.toLowerCase() || 'all';
-            renderActivitySlider(activeFilter === 'alle' ? 'all' : activeFilter);
-        }
-
-        // Utils
+        function toggleGlobalDone(id) { let d = JSON.parse(localStorage.getItem('done_items') || '[]'); if (d.includes(id)) d = d.filter(x => x !== id); else d.push(id); localStorage.setItem('done_items', JSON.stringify(d)); openActivityHub(); }
         function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
-        function switchTab(t) { document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active')); event.currentTarget.classList.add('tab-active'); }
         function changeDay(d) { if (days[currentDayIndex + d]) { currentDayIndex += d; render(); window.scrollTo(0,0); } }
+
+        // Home Long Press
+        let pressTimer;
+        const trigger = document.getElementById('trip-title-trigger');
+        trigger.onmousedown = () => pressTimer = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600);
+        trigger.onmouseup = () => clearTimeout(pressTimer);
+        trigger.ontouchstart = () => pressTimer = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600);
+        trigger.ontouchend = () => clearTimeout(pressTimer);
 
         loadCSV();
     </script>
