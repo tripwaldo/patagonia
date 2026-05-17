@@ -3,50 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trip Planer Pro</title>
+    <title>Trip Planer Pro | Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .calendar-icon { width: 50px; height: 54px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; line-height: 1; }
-        .calendar-header { background: #ef4444; color: white; width: 100%; font-size: 10px; font-weight: bold; padding: 4px 0; text-align: center; text-transform: uppercase; }
-        .calendar-day { color: #1e293b; font-size: 22px; font-weight: 900; padding-top: 4px; }
+        .calendar-icon { width: 48px; height: 52px; background: white; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; align-items: center; line-height: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .cal-m { background: #ef4444; color: white; width: 100%; font-size: 9px; font-weight: 800; padding: 3px 0; text-align: center; text-transform: uppercase; }
+        .cal-d { color: #1e293b; font-size: 20px; font-weight: 900; padding-top: 3px; }
+        .trip-card { transition: all 0.3s ease; }
+        .trip-card:active { transform: scale(0.96); }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans min-h-screen p-6 pb-12">
+
     <header class="text-center mt-8 mb-12">
-        <h1 class="text-4xl font-black tracking-tighter uppercase mb-1 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Trip Planer Pro</h1>
-        <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] font-bold text-center w-full">Family Travel Hub</p>
+        <h1 class="text-4xl font-black tracking-tighter uppercase mb-1 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
+            Trip Planer Pro
+        </h1>
+        <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] font-bold">Family Travel Hub</p>
     </header>
 
-    <div class="max-w-md mx-auto space-y-8">
-        <!-- Patagonien Karte -->
-        <a href="./patagonien/index.html" class="block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl transition-all active:scale-95">
-            <div class="h-48 w-full relative">
-                <img src="https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=compress&cs=tinysrgb&w=600" class="w-full h-full object-cover opacity-60">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-            </div>
-            <div class="absolute inset-0 p-6 flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div class="flex gap-2">
-                        <div class="calendar-icon"><div class="calendar-header">Okt</div><div class="calendar-day">15</div></div>
-                        <div class="text-white/30 self-center text-xl">→</div>
-                        <div class="calendar-icon"><div class="calendar-header">Nov</div><div class="calendar-day">12</div></div>
-                    </div>
-                    <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">28 Tage</div>
-                </div>
-                <div class="flex justify-between items-end">
-                    <div>
-                        <h2 class="text-3xl font-black italic tracking-tighter uppercase">Patagonien</h2>
-                        <p class="text-blue-400 text-xs font-bold uppercase tracking-widest">Chile & Argentinien</p>
-                    </div>
-                    <div class="flex -space-x-2"><span class="text-xl drop-shadow-lg">👨‍👩‍👧‍👦</span></div>
-                </div>
-            </div>
-        </a>
-
-        <!-- Platzhalter für Toskana -->
-        <div class="opacity-50 grayscale block relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5">
-            <div class="h-32 flex items-center justify-center italic text-slate-500">Kommende Reise: Toskana</div>
+    <div id="trip-container" class="max-w-md mx-auto space-y-6">
+        <div class="flex flex-col items-center justify-center py-20 text-slate-600">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-xs uppercase tracking-widest">Synchronisiere mit TripIt...</p>
         </div>
     </div>
+
+    <script>
+        // Dein TripIt iCal-Link
+        const icsUrl = "https://www.tripit.com/feed/ical/private/BBA87953-1BD926860BD8421FC64ECFA593BA7A11/tripit.ics";
+        const proxyUrl = "https://corsproxy.io/?";
+
+        // Konfiguration für deine Ordner und Emojis
+        const tripSettings = {
+            "patagonien": { sub: "Chile & Argentinien", img: "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=compress&w=600", wer: "👨‍👩‍👧‍👦" },
+            "toskana": { sub: "Italien Genussreise", img: "https://images.pexels.com/photos/1534445/pexels-photo-1534445.jpeg?auto=compress&w=600", wer: "👨‍🦱👩‍🦰" },
+            "galizien": { sub: "Spanien Nordküste", wer: "👨‍🦱👦👧" }
+        };
+
+        async function fetchTrips() {
+            try {
+                const response = await fetch(proxyUrl + encodeURIComponent(icsUrl));
+                const data = await response.text();
+                parseICS(data);
+            } catch (error) {
+                document.getElementById('trip-container').innerHTML = `
+                    <div class="text-center p-8 bg-red-900/20 rounded-3xl border border-red-500/50">
+                        <p class="text-sm">TripIt Feed konnte nicht geladen werden.</p>
+                        <p class="text-[10px] opacity-50 mt-2">Prüfe deine Internetverbindung.</p>
+                    </div>`;
+            }
+        }
+
+        function parseICS(data) {
+            const lines = data.split(/\r?\n/);
+            let trips = {};
+            let currentEvent = {};
+
+            lines.forEach(line => {
+                if (line.startsWith("BEGIN:VEVENT")) currentEvent = {};
+                if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8);
+                if (line.startsWith("DTSTART")) {
+                    const dateMatch = line.match(/\d{8}/);
+                    if (dateMatch) currentEvent.start = dateMatch[0];
+                }
+                if (line.startsWith("END:VEVENT")) {
+                    // FILTER: Nur Events mit "#" im Titel
+                    if (currentEvent.summary && currentEvent.summary.includes("#")) {
+                        // Extrahiere Namen nach dem # (z.B. "#Patagonien 2024" -> "Patagonien")
+                        const rawName = currentEvent.summary.match(/#(\w+)/)?.[1] || "Trip";
+                        const name = rawName.toLowerCase();
+
+                        if (!trips[name] || currentEvent.start < trips[name].startDate) {
+                            trips[name] = {
+                                displayName: rawName,
+                                startDate: currentEvent.start,
+                                fullSummary: currentEvent.summary
+                            };
+                        }
+                    }
+                }
+            });
+
+            renderHub(trips);
+        }
+
+        function renderHub(trips) {
+            const container = document.getElementById('trip-container');
+            const tripKeys = Object.keys(trips).sort((a,b) => trips[a].startDate - trips[b].startDate);
+            
+            if (tripKeys.length === 0) {
+                container.innerHTML = "<p class='text-center text-slate-500 text-xs py-10 uppercase tracking-widest'>Keine Trips mit # markiert.</p>";
+                return;
+            }
+
+            const months = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+
+            container.innerHTML = tripKeys.map(key => {
+                const t = trips[key];
+                const cfg = tripSettings[key] || { sub: "Entdeckungsreise", wer: "🌍" };
+                
+                const year = t.startDate.substring(0, 4);
+                const month = months[parseInt(t.startDate.substring(4, 6))];
+                const day = t.startDate.substring(6, 8);
+                
+                // Dynamisches Bild: Nutzt Custom-Bild aus tripSettings ODER Unsplash Suche
+                const bgImg = cfg.img || `https://source.unsplash.com/featured/800x600?landscape,${key}`;
+
+                return `
+                    <a href="./${key}/index.html" class="trip-card block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
+                        <div class="h-48 w-full relative">
+                            <img src="${bgImg}" class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        </div>
+
+                        <div class="absolute inset-0 p-6 flex flex-col justify-between">
+                            <div class="flex justify-between items-start">
+                                <div class="calendar-icon">
+                                    <div class="cal-m">${month}</div>
+                                    <div class="cal-d">${day}</div>
+                                </div>
+                                <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">
+                                    ${year}
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${t.displayName}</h2>
+                                    <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1">${cfg.sub}</p>
+                                </div>
+                                <span class="text-2xl drop-shadow-lg">${cfg.wer}</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        fetchTrips();
+    </script>
 </body>
 </html>

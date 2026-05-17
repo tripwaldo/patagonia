@@ -22,6 +22,17 @@
         body { overscroll-behavior-y: contain; overflow-x: hidden; width: 100%; position: relative; }
         .item-done img { filter: grayscale(0.6) brightness(0.4); }
     </style>
+    <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10 font-sans">
+    <!-- Zurück zur Übersicht -->
+    <button onclick="window.location.href='../index.html'" class="bg-black/40 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center border border-white/10 text-white shadow-xl active:scale-90 transition-transform">🏠</button>
+    
+    <div class="text-center">
+        <!-- Region und Tag-Anzeige -->
+    </div>
+    
+    <!-- Kleiner Platzhalter rechts für die Symmetrie -->
+    <div class="w-10"></div>
+</div>
 </head>
 <body class="bg-slate-100 text-slate-900 pb-20 font-sans">
 
