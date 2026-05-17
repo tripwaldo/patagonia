@@ -16,17 +16,15 @@
 <body class="bg-slate-950 text-white font-sans min-h-screen p-6 pb-12">
 
     <header class="text-center mt-8 mb-12">
-        <h1 class="text-4xl font-black tracking-tighter uppercase mb-1 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent font-sans">
+        <h1 class="text-4xl font-black tracking-tighter uppercase mb-1 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
             Trip Planer Pro
         </h1>
-        <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] font-bold">Family Travel Hub</p>
+        <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] font-bold text-center">Family Travel Hub</p>
     </header>
 
+    <!-- Container für alle Trips -->
     <div id="trip-container" class="max-w-md mx-auto space-y-6">
-        <div class="flex flex-col items-center justify-center py-20 text-slate-600">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
-            <p class="text-xs uppercase tracking-widest italic">Synchronisiere Trips...</p>
-        </div>
+        <!-- Wird per JS befüllt -->
     </div>
 
     <script>
@@ -34,127 +32,118 @@
         const proxyUrl = "https://corsproxy.io/?";
 
         // -------------------------------------------------------------------------
-        // DEINE AKTIVEN REISE-ORDNER
-        // Füge hier neue Ordner hinzu, sobald du sie auf GitHub erstellt hast.
-        // Der Key (links) muss dem Ordnernamen entsprechen.
+        // DEINE REISE-ORDNER (Immer sichtbar)
         // -------------------------------------------------------------------------
         const tripSettings = {
             "patagonien": { 
                 title: "Patagonien", 
                 sub: "Chile & Argentinien", 
                 img: "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=compress&w=600", 
-                wer: "👨‍👩‍👧‍👦" 
+                wer: "👨‍👩‍👧‍👦",
+                defaultDate: "15. Okt", defaultYear: "2024" // Fallback, falls TripIt noch nicht geladen
             },
             "toskana": { 
                 title: "Toskana", 
                 sub: "Italien Genussreise", 
                 img: "https://images.pexels.com/photos/1534445/pexels-photo-1534445.jpeg?auto=compress&w=600", 
-                wer: "👨‍🦱👩‍🦰👧" 
+                wer: "👨‍🦱👩‍🦰",
+                defaultDate: "20. Jun", defaultYear: "2024"
             },
             "galizien": { 
                 title: "Galizien", 
                 sub: "Spanien Nordküste", 
                 img: "https://images.pexels.com/photos/3565916/pexels-photo-3565916.jpeg?auto=compress&w=600",
-                wer: "👨‍🦱👦👧" 
+                wer: "👨‍🦱👦👧",
+                defaultDate: "05. Sep", defaultYear: "2024"
             },
-             "australien": { 
+            "australien": { 
                 title: "Paul Australien mit Matti", 
                 sub: "Work & Travel", 
-                img: "https://images.pexels.com/photos/3565916/pexels-photo-3565916.jpeg?auto=compress&w=600",
-                wer: "👨‍🦱" 
-            }, 
-             "kanada": { 
+                img: "https://images.pexels.com/photos/2101037/pexels-photo-2101037.jpeg?auto=compress&w=600", 
+                wer: "👨‍🦱",
+                defaultDate: "01. Jan", defaultYear: "2025"
+            },
+            "kanada": { 
                 title: "Rosa Kanada Trip", 
-                sub: "Sooke", 
-                img: "https://images.pexels.com/photos/3565916/pexels-photo-3565916.jpeg?auto=compress&w=600",
-                wer: "👧" 
+                sub: "Sooke / Vancouver Island", 
+                img: "https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=600", 
+                wer: "👩‍🦰",
+                defaultDate: "10. Aug", defaultYear: "2024"
             }
         };
 
-        async function fetchTrips() {
+        let foundDates = {}; // Speicher für TripIt-Daten
+
+        async function init() {
+            renderHub(); // Erstmal alles anzeigen (mit Fallback-Daten)
+            await fetchTripIt(); // Dann TripIt im Hintergrund laden und Daten updaten
+        }
+
+        async function fetchTripIt() {
             try {
                 const response = await fetch(proxyUrl + encodeURIComponent(icsUrl));
                 const data = await response.text();
-                parseICS(data);
-            } catch (error) {
-                document.getElementById('trip-container').innerHTML = `<p class="text-center text-red-400 text-xs">Fehler beim Laden.</p>`;
-            }
-        }
+                const lines = data.split(/\r?\n/);
+                let currentEvent = {};
 
-        function parseICS(data) {
-            const lines = data.split(/\r?\n/);
-            let foundTrips = {};
-            let currentEvent = {};
-
-            lines.forEach(line => {
-                if (line.startsWith("BEGIN:VEVENT")) currentEvent = {};
-                if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8);
-                if (line.startsWith("DTSTART")) {
-                    const dateMatch = line.match(/\d{8}/);
-                    if (dateMatch) currentEvent.start = dateMatch[0];
-                }
-                if (line.startsWith("END:VEVENT")) {
-                    const summary = (currentEvent.summary || "").toLowerCase();
-                    
-                    // Prüfe, ob die SUMMARY eines der Wörter aus tripSettings enthält
-                    Object.keys(tripSettings).forEach(folderName => {
-                        if (summary.includes(folderName)) {
-                            // Speichere das früheste Datum für diesen Trip
-                            if (!foundTrips[folderName] || currentEvent.start < foundTrips[folderName].startDate) {
-                                foundTrips[folderName] = {
-                                    folder: folderName,
-                                    startDate: currentEvent.start
-                                };
+                lines.forEach(line => {
+                    if (line.startsWith("BEGIN:VEVENT")) currentEvent = {};
+                    if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8).toLowerCase();
+                    if (line.startsWith("DTSTART")) {
+                        const m = line.match(/\d{8}/);
+                        if (m) currentEvent.start = m[0];
+                    }
+                    if (line.startsWith("END:VEVENT")) {
+                        Object.keys(tripSettings).forEach(key => {
+                            if (currentEvent.summary && currentEvent.summary.includes(key)) {
+                                if (!foundDates[key] || currentEvent.start < foundDates[key]) {
+                                    foundDates[key] = currentEvent.start;
+                                }
                             }
-                        }
-                    });
-                }
-            });
-
-            renderHub(foundTrips);
+                        });
+                    }
+                });
+                renderHub(); // Mit echten TripIt-Daten neu zeichnen
+            } catch (e) { console.log("TripIt Sync fehlgeschlagen, nutze Fallbacks."); }
         }
 
-        function renderHub(trips) {
+        function renderHub() {
             const container = document.getElementById('trip-container');
-            const tripKeys = Object.keys(trips).sort((a,b) => trips[a].startDate - trips[b].startDate);
-            
-            if (tripKeys.length === 0) {
-                container.innerHTML = "<p class='text-center text-slate-500 text-xs py-10 uppercase tracking-widest'>Keine passenden Trips in TripIt gefunden.</p>";
-                return;
-            }
-
             const months = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
-
-            container.innerHTML = tripKeys.map(key => {
-                const t = trips[key];
+            
+            container.innerHTML = Object.keys(tripSettings).map(key => {
                 const cfg = tripSettings[key];
-                
-                const year = t.startDate.substring(0, 4);
-                const month = months[parseInt(t.startDate.substring(4, 6))];
-                const day = t.startDate.substring(6, 8);
+                let displayDay = cfg.defaultDate.split(".")[0];
+                let displayMonth = cfg.defaultDate.split(" ")[1];
+                let displayYear = cfg.defaultYear;
+
+                // Falls TripIt Daten hat, überschreibe Fallbacks
+                if (foundDates[key]) {
+                    displayYear = foundDates[key].substring(0, 4);
+                    displayMonth = months[parseInt(foundDates[key].substring(4, 6))];
+                    displayDay = foundDates[key].substring(6, 8);
+                }
 
                 return `
-                    <a href="./${t.folder}/index.html" class="trip-card block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl mb-6">
+                    <a href="./${key}/index.html" class="trip-card block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl transition-all active:scale-95">
                         <div class="h-52 w-full relative">
                             <img src="${cfg.img}" class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
                         </div>
-
                         <div class="absolute inset-0 p-6 flex flex-col justify-between">
                             <div class="flex justify-between items-start">
                                 <div class="calendar-icon">
-                                    <div class="cal-m">${month}</div>
-                                    <div class="cal-d">${day}</div>
+                                    <div class="cal-m">${displayMonth}</div>
+                                    <div class="cal-d">${displayDay}</div>
                                 </div>
                                 <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">
-                                    ${year}
+                                    ${displayYear}
                                 </div>
                             </div>
-
                             <div class="flex justify-between items-end">
                                 <div>
-                                    <h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none font-sans">${cfg.title}</h2>
-                                    <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1 font-sans">${cfg.sub}</p>
+                                    <h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${cfg.title}</h2>
+                                    <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1">${cfg.sub}</p>
                                 </div>
                                 <span class="text-2xl drop-shadow-lg">${cfg.wer}</span>
                             </div>
@@ -164,7 +153,7 @@
             }).join('');
         }
 
-        fetchTrips();
+        init();
     </script>
 </body>
 </html>
