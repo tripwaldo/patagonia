@@ -69,3 +69,41 @@
 
         function renderHub() {
             const container = document.getElementById('trip-container');
+            const months = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+            
+            // SORTIERUNG: Absteigend nach Datum (Neuere zuerst)
+            const sortedKeys = Object.keys(tripSettings).sort((a, b) => {
+                const dateA = foundDates[a] || tripSettings[a].sortDate;
+                const dateB = foundDates[b] || tripSettings[b].sortDate;
+                return dateB.localeCompare(dateA);
+            });
+
+            container.innerHTML = sortedKeys.map(key => {
+                const cfg = tripSettings[key];
+                let d = foundDates[key] ? foundDates[key].substring(6,8) : cfg.defaultDate.split(". ")[0];
+                let m = foundDates[key] ? months[parseInt(foundDates[key].substring(4,6))] : cfg.defaultDate.split(" ")[1];
+                let y = foundDates[key] ? foundDates[key].substring(0,4) : cfg.defaultDate.split(" ")[2];
+
+                return `
+                    <a href="./${key}/index.html" class="trip-card block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl mb-6">
+                        <div class="h-52 w-full relative">
+                            <img src="${cfg.img}" class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                        </div>
+                        <div class="absolute inset-0 p-6 flex flex-col justify-between font-sans">
+                            <div class="flex justify-between items-start">
+                                <div class="calendar-icon"><div class="cal-m">${m}</div><div class="cal-d">${d}</div></div>
+                                <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">${y}</div>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div><h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${cfg.title}</h2><p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1">${cfg.sub}</p></div>
+                                <span class="text-2xl drop-shadow-lg">${cfg.wer}</span>
+                            </div>
+                        </div>
+                    </a>`;
+            }).join('');
+        }
+        init();
+    </script>
+</body>
+</html>
