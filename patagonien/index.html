@@ -8,115 +8,124 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        .tab-active { border-bottom: 3px solid #3b82f6; color: #1e3a8a; font-weight: 800; }
         .hidden { display: none !important; }
-        .indicator-dot { height: 6px; width: 6px; background-color: #3b82f6; border-radius: 50%; display: inline-block; margin-left: 3px; }
-        .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.6) 0%, rgba(15,23,42,0) 30%, rgba(15,23,42,0) 60%, rgba(15,23,42,0.9) 100%); }
-        .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        /* Animation für das Home-Menü */
-        #home-modal.open { display: flex !important; }
-        .item-done img { filter: grayscale(0.8) brightness(0.5); }
-        body { background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); }
+        .glass-dark { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.4) 0%, rgba(15,23,42,0.8) 100%); }
+        .spot-text-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); }
+        
+        /* Unified Carousel Snap */
+        .snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .snap-x::-webkit-scrollbar { display: none; }
+        .snap-center { scroll-snap-align: center; scroll-snap-stop: always; }
+
+        /* Calendar Icon */
+        .calendar-capsule { background: white; border-radius: 12px; padding: 4px 10px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        
+        body { background-color: #0f172a; color: #f8fafc; overscroll-behavior-y: contain; }
+        .item-done img { filter: grayscale(0.8) brightness(0.4); }
+        
+        /* Smooth Card Scroll */
+        .logistics-area { position: relative; z-index: 20; margin-top: -40px; border-radius: 32px 32px 0 0; background: #f8fafc; min-height: 60vh; }
     </style>
 </head>
-<body class="text-slate-900 pb-20 font-sans overflow-x-hidden">
+<body class="font-sans overflow-x-hidden">
 
-    <!-- HOME MODAL (Wird durch Long-Press aktiviert) -->
-    <div id="home-modal" class="hidden fixed inset-0 z-[200] bg-slate-950/80 backdrop-blur-md items-center justify-center p-8" onclick="this.classList.remove('open')">
+    <!-- UNIVERSAL ACTIVITY CAROUSEL -->
+    <div id="activity-overlay" class="hidden fixed inset-0 z-[200] bg-black flex flex-col">
+        <!-- Header mit Filtern -->
+        <div class="p-6 flex justify-between items-center z-30">
+            <div class="flex gap-2" id="carousel-filters">
+                <button onclick="filterCarousel('all')" class="glass px-4 py-2 rounded-xl text-xs font-bold border-blue-500">Alle</button>
+                <button onclick="filterCarousel('hiking')" class="glass p-2 rounded-xl text-xl">🥾</button>
+                <button onclick="filterCarousel('photo')" class="glass p-2 rounded-xl text-xl">📸</button>
+                <button onclick="filterCarousel('museum')" class="glass p-2 rounded-xl text-xl">🏛️</button>
+            </div>
+            <button onclick="closeOverlay('activity-overlay')" class="glass w-12 h-12 rounded-full flex items-center justify-center text-3xl">&times;</button>
+        </div>
+        
+        <div id="unified-slider" class="flex-1 flex overflow-x-auto snap-x h-full">
+            <!-- Dynamisch: Hikes + Spots -->
+        </div>
+    </div>
+
+    <!-- HOME MODAL -->
+    <div id="home-modal" class="hidden fixed inset-0 z-[210] bg-slate-950/80 backdrop-blur-md items-center justify-center p-8" onclick="this.classList.remove('open')">
         <div class="bg-white rounded-3xl p-6 w-full max-w-xs text-center shadow-2xl" onclick="event.stopPropagation()">
             <div class="text-4xl mb-4">🏠</div>
-            <h2 class="text-xl font-bold mb-2 text-slate-800">Reise wechseln?</h2>
-            <p class="text-sm text-slate-500 mb-6">Möchtest du zurück zur Übersicht aller Trips?</p>
-            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold mb-3 shadow-lg active:scale-95 transition-transform">Ja, zum Hauptmenü</button>
+            <h2 class="text-xl font-bold mb-2 text-slate-800">Trip wechseln</h2>
+            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold mb-3 shadow-lg">Zum Hauptmenü</button>
             <button onclick="document.getElementById('home-modal').classList.remove('open')" class="w-full py-3 text-slate-400 font-medium">Abbrechen</button>
         </div>
     </div>
 
-    <!-- OVERLAYS (Hikes, Spots, Peek) -->
-    <div id="hike-overlay" class="hidden fixed inset-0 z-[140] bg-black flex flex-col"><button onclick="closeOverlay('hike-overlay')" class="absolute top-6 right-6 z-[150] bg-black/40 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl border border-white/10">&times;</button><div id="hike-slider" class="flex-1 flex overflow-x-auto snap-x h-full"></div></div>
-    <div id="spot-overlay" class="hidden fixed inset-0 z-[110] bg-black flex flex-col"><button onclick="closeOverlay('spot-overlay')" class="absolute top-6 right-6 z-[130] bg-black/40 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl border border-white/10">&times;</button><div id="spot-slider" class="flex-1 flex overflow-x-auto snap-x h-full"></div></div>
-    <div id="image-overlay" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"><img id="overlay-img" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl"></div>
+    <!-- BACKGROUND IMAGE -->
+    <div class="fixed inset-0 z-0">
+        <img id="hero-img" src="" class="w-full h-full object-cover opacity-60">
+        <div class="absolute inset-0 hero-gradient"></div>
+    </div>
 
-    <!-- Header UI -->
-    <header class="relative text-white overflow-hidden h-[420px] shadow-2xl">
-        <div id="hero-img-container" class="absolute inset-0 bg-slate-900">
-            <img id="hero-img" src="" class="w-full h-full object-cover opacity-80 transition-opacity duration-700">
-            <div class="absolute inset-0 hero-gradient"></div>
-        </div>
+    <!-- SCROLLABLE CONTENT -->
+    <div class="relative z-10 w-full min-h-screen">
         
-        <!-- TOP NAV: Trip Name & Date Capsule -->
-        <div class="absolute top-4 w-full px-4 flex justify-between items-center z-20">
-            <!-- Home Trigger Area -->
-            <div id="trip-title-trigger" class="glass px-4 py-2 rounded-2xl flex items-center gap-2 active:scale-95 transition-transform cursor-pointer">
-                <span class="text-blue-300 text-xs font-black tracking-[0.2em]" id="display-trip-name">TRIP</span>
-            </div>
-            
-            <!-- Date Capsule -->
-            <div class="glass px-2 py-1.5 rounded-2xl flex items-center gap-3 shadow-xl">
-                <button onclick="changeDay(-1)" class="w-8 h-8 flex items-center justify-center active:scale-75 text-xl">◀</button>
-                <div class="text-center min-w-[70px]">
-                    <div id="display-day-num" class="text-lg font-black leading-none">--</div>
-                    <div id="display-month" class="text-[9px] uppercase font-bold tracking-widest text-blue-200">---</div>
-                </div>
-                <button onclick="changeDay(1)" class="w-8 h-8 flex items-center justify-center active:scale-75 text-xl">▶</button>
-            </div>
-        </div>
-
-        <!-- CONTENT AREA: Region, Sun, Hotel -->
-        <div class="absolute top-24 left-0 w-full px-6 flex justify-between items-start z-10 font-sans">
-            <!-- Linke Seite: Infos -->
-            <div class="flex-1">
-                <div class="flex items-baseline gap-2 mb-1">
-                    <div id="display-region" class="text-2xl font-black tracking-tight drop-shadow-lg leading-tight uppercase italic">Lade...</div>
-                    <div id="display-day-label" class="text-blue-300 text-sm font-bold opacity-80">TAG -</div>
+        <!-- Header Info -->
+        <header class="p-6 pt-8 flex flex-col h-[40vh] justify-between">
+            <div class="flex justify-between items-start">
+                <div id="trip-title-trigger" class="glass px-4 py-2 rounded-2xl">
+                    <span class="text-blue-300 text-[10px] font-black tracking-[0.2em]" id="display-trip-name text-white">TRIP</span>
                 </div>
                 
-                <!-- Sonnenzeiten in kleiner Glas-Bar -->
-                <div class="inline-flex items-center gap-4 glass px-3 py-1.5 rounded-xl text-[10px] font-bold mb-6">
-                    <span class="flex items-center gap-1.5">🌅 <span id="sunrise">--:--</span></span>
-                    <span class="text-white/20">|</span>
-                    <span class="flex items-center gap-1.5">🌇 <span id="sunset">--:--</span></span>
-                </div>
-
-                <!-- Unterkunft Vorschau -->
-                <div id="home-preview" class="hidden group relative">
-                    <div class="text-[9px] uppercase font-bold text-white/50 mb-2 tracking-widest">Aktuelle Unterkunft</div>
-                    <img id="home-img" src="" class="w-40 h-32 object-cover rounded-2xl border-2 border-white/30 shadow-2xl bg-slate-800 active:scale-[1.02] transition-transform">
-                    <div class="mt-2 text-xs font-black uppercase tracking-tighter drop-shadow-md text-white/90" id="home-title">Hotel</div>
+                <div class="glass px-2 py-1.5 rounded-2xl flex items-center gap-3">
+                    <button onclick="changeDay(-1)" class="w-8 h-8 flex items-center justify-center text-xl">◀</button>
+                    <div class="calendar-capsule">
+                        <span id="display-day-num" class="text-slate-900 text-xl font-black leading-none">--</span>
+                        <span id="display-month" class="text-red-500 text-[9px] font-black uppercase">---</span>
+                    </div>
+                    <button onclick="changeDay(1)" class="w-8 h-8 flex items-center justify-center text-xl">▶</button>
                 </div>
             </div>
 
-            <!-- Rechte Seite: Action Buttons -->
-            <div class="flex flex-col gap-3 pt-2">
-                <button id="btn-hikes" onclick="openHikeOverlay()" class="hidden bg-emerald-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl active:scale-90 border border-white/20 text-xl">🥾</button>
-                <button id="btn-camera" onclick="openSpotOverlay()" class="hidden bg-orange-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-2xl active:scale-90 border border-white/20 text-xl">📸</button>
+            <div class="mb-12">
+                <div class="flex items-baseline gap-2 mb-2">
+                    <h1 id="display-region" class="text-4xl font-black tracking-tighter uppercase italic leading-none drop-shadow-2xl text-white">Lade...</h1>
+                    <span id="display-day-label" class="text-blue-400 font-bold text-sm">TAG -</span>
+                </div>
+                <div class="inline-flex items-center gap-4 glass-dark px-4 py-2 rounded-2xl text-[11px] font-bold text-white">
+                    <span>🌅 <span id="sunrise">--:--</span></span>
+                    <span class="opacity-20">|</span>
+                    <span>🌇 <span id="sunset">--:--</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Fixed Logistics Area -->
+        <div class="logistics-area p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-slate-400 text-xs font-black uppercase tracking-[0.2em]">Fixe Termine</h2>
+                <div id="home-preview" class="hidden">
+                    <img id="home-img" src="" class="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-lg" onclick="showPeek()">
+                </div>
+            </div>
+
+            <div id="sec-logistik" class="space-y-4">
+                <!-- TripIt Data cards -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="logistik-empty" class="hidden py-10 text-center text-slate-300 italic text-sm">
+                Keine fixen Termine für heute.
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Tab Bar -->
-    <nav class="bg-white flex justify-around shadow-md sticky top-0 z-30 border-b border-slate-100 text-center font-bold uppercase tracking-widest text-[10px] py-1">
-        <button onclick="switchTab('logistik')" id="btn-logistik" class="p-4 flex-1">Logistik<span id="dot-logistik" class="indicator-dot hidden"></span></button>
-        <button onclick="switchTab('aktivität')" id="btn-aktivität" class="p-4 flex-1">Aktivität<span id="dot-aktivität" class="indicator-dot hidden"></span></button>
-        <button onclick="switchTab('foto')" id="btn-foto" class="p-4 flex-1">Wichtig<span id="dot-foto" class="indicator-dot hidden"></span></button>
-    </nav>
-
-    <main class="p-4 max-w-md mx-auto min-h-[50vh]">
-        <div id="day-alerts" class="space-y-3 mb-5 font-sans"></div>
-        <div id="sec-logistik" class="space-y-4 font-sans"></div>
-        <div id="sec-aktivität" class="hidden space-y-4 font-sans"></div>
-        <div id="sec-foto" class="hidden space-y-4 font-sans"></div>
-    </main>
+    <!-- Floating Activity Button -->
+    <button onclick="openActivityHub()" class="fixed bottom-6 right-6 z-[100] bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border-4 border-white/20">
+        🗺️
+    </button>
 
     <script>
         let tripData = [], spotData = [], hikeData = [], days = [], currentDayIndex = 0, isPeeking = false;
-        const icons = { "flug": "✈️", "hotel": "🏨", "taxi": "🚕", "mietwagen": "🚗", "bus": "🚌", "alert": "⚠️", "ausflug": "🗺️", "hiking": "🥾", "fotospot": "📸", "restaurant": "🍽️" };
-        const regionImages = { 
-            "buenos aires": "https://images.pexels.com/photos/34104156/pexels-photo-34104156.jpeg?auto=format&fit=crop&w=800&q=80", 
-            "el calafate argentinien": "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=format&fit=crop&w=800&q=80", 
-            "torres del paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80", 
-            "san pedro de atacama": "https://images.pexels.com/photos/20853000/pexels-photo-20853000.jpeg?auto=format&fit=crop&w=800&q=80"
-        };
+        const icons = { "flug": "✈️", "hotel": "🏨", "taxi": "🚕", "mietwagen": "🚗", "bus": "🚌", "alert": "⚠️", "restaurant": "🍽️" };
 
         function getVal(obj, key) { if (!obj) return ""; const foundKey = Object.keys(obj).find(k => k.toLowerCase().trim().replace(' ', '') === key.toLowerCase().trim().replace(' ', '')); return foundKey ? obj[foundKey].toString().trim() : ""; }
 
@@ -133,8 +142,6 @@
             }});
         }
 
-        function timeToMinutes(t) { if (!t || !t.includes(':')) return 9999; const p = t.split(':'); return (parseInt(p[0]) * 60) + parseInt(p[1]); }
-
         function processData() {
             if (tripData.length === 0) return;
             days = [...new Set(tripData.map(item => parseInt(getVal(item, "Tag#"))))].filter(n => !isNaN(n)).sort((a, b) => a - b);
@@ -149,77 +156,136 @@
         function render() {
             const currentTagNum = days[currentDayIndex];
             const items = tripData.filter(i => parseInt(getVal(i, "Tag#")) === currentTagNum);
-            items.sort((a, b) => timeToMinutes(getVal(a, "Startzeit")) - timeToMinutes(getVal(b, "Startzeit")));
+            
             const first = items[0] || {};
-            const region = getVal(first, "Region") || "Nature", regionKey = region.toLowerCase().trim();
+            const region = getVal(first, "Region") || "Nature";
             const dateStr = getVal(first, "Datum") || "--. ---";
 
-            // Header Updates
-            document.getElementById('display-day-label').innerText = "Tag " + currentTagNum;
+            document.getElementById('display-day-label').innerText = "TAG " + currentTagNum;
             document.getElementById('display-day-num').innerText = dateStr.split(".")[0] || "--";
             document.getElementById('display-month').innerText = dateStr.split(" ")[1] || "---";
             document.getElementById('display-region').innerText = region;
             document.getElementById('sunrise').innerText = getVal(first, "Sunrise") || "--:--";
             document.getElementById('sunset').innerText = getVal(first, "Sunset") || "--:--";
-            document.getElementById('hero-img').src = regionImages[regionKey] || `https://source.unsplash.com/featured/1200x900?landscape,${encodeURIComponent(region)}`;
+            document.getElementById('hero-img').src = `https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80`; // Patagonien Default
 
+            // Trip Name from Path
             const path = window.location.pathname.split('/');
             document.getElementById('display-trip-name').innerText = path[path.length - 2].toUpperCase();
 
-            // Buttons
-            document.getElementById('btn-camera').classList.toggle('hidden', !spotData.some(s => getVal(s, "Region").toLowerCase().includes(regionKey)));
-            document.getElementById('btn-hikes').classList.toggle('hidden', !hikeData.some(h => getVal(h, "Region").toLowerCase().includes(regionKey)));
-
-            // Unterkunft & Peek
+            // Hotel Preview
             const homeItem = items.find(i => getVal(i, "Home") !== "");
             if(homeItem) {
                 document.getElementById('home-preview').classList.remove('hidden');
                 document.getElementById('home-img').src = getVal(homeItem, "Home");
-                document.getElementById('home-title').innerText = getVal(homeItem, "Hometitle") || getVal(homeItem, "Titel");
-                const showP = (e) => { e.preventDefault(); isPeeking = true; document.getElementById('overlay-img').src = getVal(homeItem, "Home"); document.getElementById('image-overlay').classList.remove('hidden'); };
-                const hideP = () => { document.getElementById('image-overlay').classList.add('hidden'); setTimeout(() => isPeeking = false, 100); };
-                document.getElementById('home-img').onmousedown = showP; document.getElementById('home-img').ontouchstart = showP; window.onmouseup = hideP; window.ontouchend = hideP;
-            } else document.getElementById('home-preview').classList.add('hidden');
+            }
 
-            // Tabs Content
-            const hasL = items.some(i => getVal(i, "Kategorie").toLowerCase() === 'logistik' && getVal(i, "Typ").toLowerCase() !== 'alert');
-            const hasA = items.some(i => getVal(i, "Kategorie").toLowerCase() === 'aktivität');
-            const hasF = items.some(i => getVal(i, "Risiko") || getVal(i, "Shot idea") || getVal(i, "Objektiv") || getVal(i, "Wichtig"));
-            document.getElementById('dot-logistik').classList.toggle('hidden', !hasL);
-            document.getElementById('dot-aktivität').classList.toggle('hidden', !hasA);
-            document.getElementById('dot-foto').classList.toggle('hidden', !hasF);
+            // Fixed Logistics List
+            const logContainer = document.getElementById('sec-logistik');
+            logContainer.innerHTML = "";
+            const fixedItems = items.filter(i => getVal(i, "Kategorie").toLowerCase() === 'logistik' || getVal(i, "Startzeit"));
+            
+            if(fixedItems.length === 0) document.getElementById('logistik-empty').classList.remove('hidden');
+            else document.getElementById('logistik-empty').classList.add('hidden');
 
-            document.getElementById('day-alerts').innerHTML = ""; document.getElementById('sec-logistik').innerHTML = ""; document.getElementById('sec-aktivität').innerHTML = ""; document.getElementById('sec-foto').innerHTML = "";
-            items.forEach(item => {
-                const icon = icons[getVal(item, "Typ").toLowerCase()] || icons[getVal(item, "Kategorie").toLowerCase()] || "📍";
-                if (getVal(item, "Typ").toLowerCase() === "alert") document.getElementById('day-alerts').appendChild(createAlertCard(item));
-                if (getVal(item, "Kategorie").toLowerCase() === "logistik" && getVal(item, "Typ").toLowerCase() !== "alert") document.getElementById('sec-logistik').appendChild(createCard(item, icon));
-                else if (getVal(item, "Kategorie").toLowerCase() === "aktivität") document.getElementById('sec-aktivität').appendChild(createCard(item, icon));
-                if (getVal(item, "Risiko") || getVal(item, "Shot idea") || getVal(item, "Objektiv") || getVal(item, "Wichtig")) document.getElementById('sec-foto').appendChild(createInfoCard(item));
+            fixedItems.forEach(item => {
+                const type = getVal(item, "Typ").toLowerCase();
+                const icon = icons[type] || "📍";
+                const div = document.createElement('div');
+                div.className = "bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4";
+                div.innerHTML = `
+                    <div class="text-3xl">${icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">${getVal(item, "Typ")}</div>
+                        <h3 class="font-bold text-slate-800 truncate">${getVal(item, "Titel")}</h3>
+                        <p class="text-xs text-slate-500 truncate">${getVal(item, "Details")}</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-black text-blue-600">${getVal(item, "Startzeit")}</div>
+                        <div class="text-[10px] text-slate-300 font-bold">${getVal(item, "Dauer")}</div>
+                    </div>
+                `;
+                logContainer.appendChild(div);
             });
-            if (hasL) switchTab('logistik'); else if (hasA) switchTab('aktivität'); else switchTab('foto');
         }
 
-        // Long Press Logik für Home Button
-        const titleTrigger = document.getElementById('trip-title-trigger');
-        let pressTimer;
-        const startPress = () => pressTimer = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600);
-        const cancelPress = () => clearTimeout(pressTimer);
-        titleTrigger.onmousedown = startPress; titleTrigger.ontouchstart = startPress;
-        window.onmouseup = cancelPress; window.ontouchend = cancelPress;
+        // UNIFIED HUB LOGIC
+        function openActivityHub() {
+            const region = document.getElementById('display-region').innerText.toLowerCase().trim();
+            const hikes = hikeData.filter(h => getVal(h, "Region").toLowerCase().includes(region)).map(i => ({...i, category: 'hiking'}));
+            const spots = spotData.filter(s => getVal(s, "Region").toLowerCase().includes(region)).map(i => ({...i, category: 'photo'}));
+            
+            const allActivities = [...hikes, ...spots];
+            allActivities.sort((a, b) => (localStorage.getItem('done_items') || '[]').includes(getVal(a, "Title")) - (localStorage.getItem('done_items') || '[]').includes(getVal(b, "Title")));
 
-        // Utils (Rest bleibt gleich)
-        function toggleDone(id, key, refresh) { let d = JSON.parse(localStorage.getItem(key) || '[]'); if (d.includes(id)) d = d.filter(x => x !== id); else d.push(id); localStorage.setItem(key, JSON.stringify(d)); refresh(); }
-        function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); isPeeking = false; }
-        function switchTab(t) { document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active')); document.getElementById('btn-' + t).classList.add('tab-active'); document.querySelectorAll('main > div:not(#day-alerts)').forEach(s => s.classList.add('hidden')); document.getElementById('sec-' + t).classList.remove('hidden'); }
+            const slider = document.getElementById('unified-slider');
+            slider.innerHTML = "";
+
+            allActivities.forEach(item => {
+                const id = getVal(item, "Title");
+                const done = (localStorage.getItem('done_items') || '[]').includes(id);
+                const isHike = item.category === 'hiking';
+                
+                const card = document.createElement('div');
+                card.className = `min-w-full h-full snap-center relative overflow-hidden activity-card ${item.category} ${done ? 'item-done' : ''}`;
+                card.innerHTML = `
+                    <img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest">
+                        <div class="${isHike ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px]">
+                            ${isHike ? '🥾 HIKE' : '📸 PHOTO'}
+                        </div>
+                        ${isHike ? `<div class="bg-black/30 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px]">Lvl: ${getVal(item, "Level")}</div>` : ''}
+                    </div>
+                    <div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20">
+                        <h3 class="text-4xl font-black text-white leading-tight mb-3 drop-shadow-2xl">${getVal(item, "Title")}</h3>
+                        ${isHike ? `
+                            <div class="flex gap-3 mb-4 text-white font-mono text-[10px] font-bold uppercase tracking-tighter">
+                                <span class="bg-white/20 backdrop-blur-md px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span>
+                                <span class="bg-white/20 backdrop-blur-md px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span>
+                            </div>
+                        ` : ''}
+                        <p class="text-white/80 text-sm mb-8 italic drop-shadow-lg leading-relaxed">"${getVal(item, "Details")}"</p>
+                        <div class="flex items-center gap-3">
+                            <a href="${isHike ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all">
+                                ${isHike ? '🗺️ Komoot' : '📍 Standort'}
+                            </a>
+                            <button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all">✓</button>
+                        </div>
+                    </div>
+                `;
+                slider.appendChild(card);
+            });
+            document.getElementById('activity-overlay').classList.remove('hidden');
+        }
+
+        function filterCarousel(type) {
+            const cards = document.querySelectorAll('.activity-card');
+            cards.forEach(c => {
+                if(type === 'all' || c.classList.contains(type)) c.classList.remove('hidden');
+                else c.classList.add('hidden');
+            });
+        }
+
+        function toggleGlobalDone(id) {
+            let d = JSON.parse(localStorage.getItem('done_items') || '[]');
+            if (d.includes(id)) d = d.filter(x => x !== id); else d.push(id);
+            localStorage.setItem('done_items', JSON.stringify(d));
+            openActivityHub();
+        }
+
+        // Home Long Press
+        let pressTimer;
+        document.getElementById('trip-title-trigger').onmousedown = () => pressTimer = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600);
+        document.getElementById('trip-title-trigger').onmouseup = () => clearTimeout(pressTimer);
+
+        function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
+        function switchTab(t) { 
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active')); 
+            event.currentTarget.classList.add('tab-active');
+            // Hier könnten wir Filter für die Logistik einbauen, falls nötig
+        }
         function changeDay(d) { if (days[currentDayIndex + d]) { currentDayIndex += d; render(); window.scrollTo(0,0); } }
-        function createCard(item, icon) { const div = document.createElement('div'); div.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-3"; div.innerHTML = `<div class="flex justify-between items-start gap-3"><div class="flex items-center space-x-4 flex-1 min-w-0 font-sans"><div class="text-3xl flex-shrink-0 font-sans">${icon}</div><div class="min-w-0 flex-1 font-sans"><span class="text-[9px] text-slate-400 uppercase font-bold tracking-tighter font-sans font-sans">${getVal(item, "Typ")}</span><h3 class="font-bold text-slate-800 leading-tight break-words text-sm font-sans">${getVal(item, "Titel")}</h3></div></div><div class="text-right flex-shrink-0 font-sans font-sans"><p class="font-bold text-blue-900 text-sm whitespace-nowrap font-mono">${getVal(item, "Startzeit") ? '🕒 ' + getVal(item, "Startzeit") : ''}</p><p class="text-[9px] text-slate-400 mt-0.5 whitespace-nowrap font-mono">${getVal(item, "Dauer") ? '⏳ ' + getVal(item, "Dauer") : ''}</p></div></div>${getVal(item, "Details") ? `<p class="text-xs text-slate-500 mt-3 ml-12 border-l-2 border-slate-100 pl-3 leading-relaxed font-sans italic">${getVal(item, "Details")}</p>` : ''}<div class="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center ml-12 text-[10px] font-bold"><a href="${getVal(item, "Maps")}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md ${!getVal(item, "Maps") ? 'hidden' : ''}">📍 MAPS</a><span class="font-mono text-slate-400 uppercase truncate max-w-[130px]">${getVal(item, "Booking Code") || getVal(item, "Anbieter") || ""}</span></div>`; return div; }
-        function createAlertCard(i) { const d = document.createElement('div'); d.className = "alert-card p-4 rounded-r-xl shadow-sm mb-2"; d.innerHTML = `<h3 class="font-bold text-red-800 text-[11px] uppercase tracking-tight leading-tight font-sans">⚠️ ${getVal(i, "Titel")} ${getVal(i, "Risiko") ? ': ' + getVal(i, "Risiko") : ''}</h3>`; return d; }
-        function createInfoCard(i) { const d = document.createElement('div'); d.className = "bg-slate-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-orange-500 mb-4"; let h = `<h3 class="font-bold text-orange-400 text-[10px] mb-3 uppercase tracking-widest font-sans">${getVal(i, "Titel")}</h3>`; if (getVal(i, "Wichtig")) h += `<div class="mb-4 p-3 bg-white/5 rounded-lg border border-white/10 font-sans"><p class="text-[10px] text-orange-300 uppercase font-bold mb-1 font-sans font-sans">💡 Wichtig</p><p class="text-sm leading-relaxed italic text-slate-100 font-sans">${getVal(i, "Wichtig")}</p></div>`; if (getVal(i, "Risiko")) h += `<p class="text-sm text-red-300 mb-3 font-bold uppercase font-sans">⚠️ Risiko: ${getVal(i, "Risiko")}</p>`; if (getVal(i, "Shot idea")) h += `<p class="text-xs italic text-slate-300 mb-3 font-sans">"📸 ${getVal(i, "Shot idea")}"</p>`; if (getVal(i, "Objektiv") || getVal(i, "Bestes Licht")) h += `<div class="grid grid-cols-2 gap-3 mt-2 text-[9px] font-sans">${getVal(i, "Objektiv") ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">Linse: ${getVal(i, "Objektiv")}</div>` : ''}${getVal(i, "Bestes Licht") ? `<div class="bg-slate-700/50 p-2 rounded-lg border border-slate-600 font-sans">Licht: ${getVal(i, "Bestes Licht")}</div>` : ''}</div>`; d.innerHTML = h; return d; }
-        function openHikeOverlay() { isPeeking = true; const region = document.getElementById('display-region').innerText.toLowerCase().trim(); const hikes = hikeData.filter(h => getVal(h, "Region").toLowerCase().trim().includes(region)); const slider = document.getElementById('hike-slider'); slider.innerHTML = ""; hikes.forEach(hike => { const hId = getVal(hike, "Region") + getVal(hike, "Title"); const done = (localStorage.getItem('done_hikes') || '[]').includes(hId); const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`; card.innerHTML = `<img src="${getVal(hike, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest"><div class="bg-emerald-600 border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px]">🥾 HIKE</div>${done ? '<div class="bg-green-500 text-white px-3 py-1 rounded text-[10px] shadow-lg italic">✓ ERLEDIGT</div>' : ''}</div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-8 pt-32 flex flex-col justify-end z-20 font-sans"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl font-sans">${getVal(hike, "Title")}</h3><div class="flex gap-3 mb-4 text-white/90 font-mono text-[10px] font-bold uppercase tracking-tighter"><span class="bg-white/10 backdrop-blur-md px-2 py-1 rounded border border-white/10 italic">📏 ${getVal(hike, "KM")}km</span><span class="bg-white/10 backdrop-blur-md px-2 py-1 rounded border border-white/10 italic">▲ ${getVal(hike, "HM")}m</span><span class="bg-white/10 backdrop-blur-md px-2 py-1 rounded border border-white/10 italic font-sans font-sans">🕒 ${getVal(hike, "Dauer")}</span></div><p class="text-white/80 text-sm mb-8 italic drop-shadow-lg font-sans">"${getVal(hike, "Details")}"</p><div class="flex items-center gap-3 font-sans font-sans"><a href="${getVal(hike, "KomootLink")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-emerald-600 rounded-2xl shadow-xl active:bg-emerald-700 transition-all font-sans">🗺️ Komoot</a><button onclick="toggleDone('${hId}', 'done_hikes', openHikeOverlay)" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl">✓</button></div></div>`; slider.appendChild(card); }); document.getElementById('hike-overlay').classList.remove('hidden'); }
-        function openSpotOverlay() { isPeeking = true; const region = document.getElementById('display-region').innerText.toLowerCase().trim(); const spots = spotData.filter(s => getVal(s, "Region").toLowerCase().trim().includes(region)); const slider = document.getElementById('spot-slider'); slider.innerHTML = ""; spots.forEach(spot => { const sId = getVal(spot, "Region") + getVal(spot, "Title"); const done = (localStorage.getItem('done_spots') || '[]').includes(sId); const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`; card.innerHTML = `<img src="${getVal(spot, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest"><div class="bg-orange-600 border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px]">📸 PHOTO</div><div class="bg-black/30 backdrop-blur-lg border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px]">🕒 ${getVal(spot, "Licht")}</div><div class="bg-black/30 backdrop-blur-lg border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px]">📸 ${getVal(spot, "Linse")}</div>${done ? '<div class="bg-green-500 text-white px-3 py-1 rounded text-[10px] shadow-lg italic">✓ BESUCHT</div>' : ''}</div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-8 pt-32 flex flex-col justify-end z-20 font-sans font-sans font-sans font-sans font-sans"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl font-sans font-sans">${getVal(spot, "Title")}</h3><p class="text-white/80 text-sm mb-6 italic drop-shadow-lg font-sans font-sans">"${getVal(spot, "Details")}"</p><div class="flex items-center gap-3 font-sans font-sans"><a href="${getVal(spot, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans font-sans">📍 Standort</a><button onclick="toggleDone('${sId}', 'done_spots', openSpotOverlay)" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl">✓</button></div></div>`; slider.appendChild(card); }); document.getElementById('spot-overlay').classList.remove('hidden'); }
-        document.addEventListener('touchstart', e => { sX = e.touches[0].clientX; sY = e.touches[0].clientY; }, { passive: true });
-        document.addEventListener('touchend', e => { const overlays = ['spot-overlay', 'hike-overlay', 'image-overlay']; if (overlays.some(id => !document.getElementById(id).classList.contains('hidden')) || isPeeking) return; let dX = sX - e.changedTouches[0].clientX, dY = sY - e.changedTouches[0].clientY; if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 70) changeDay(dX > 0 ? 1 : -1); }, { passive: true });
+
         loadCSV();
     </script>
 </body>
