@@ -1,32 +1,22 @@
-const CACHE_NAME = 'patagonia-v3';
-
-// Dateien, die sofort beim Start geladen werden
-const PRE_CACHE = [
+const CACHE_NAME = 'patagonia-v1';
+const ASSETS = [
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js'
+  'https://cdn.tailwindcss.com'
 ];
 
+// Installieren & Cachen
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(PRE_CACHE))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
 });
 
-// "Network First, then Cache" Strategie
-// Speichert automatisch alle Bilder (Pexels, Komoot Maps), die du einmal ansiehst.
+// Cache-First Strategie
 self.addEventListener('fetch', e => {
   e.respondWith(
-    fetch(e.request).then(response => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
-      }
-      return response;
-    }).catch(() => {
-      return caches.match(e.request);
+    caches.match(e.request).then(response => {
+      return response || fetch(e.request);
     })
   );
 });
