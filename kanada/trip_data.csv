@@ -1,6 +1,4 @@
-Tag#;Datum;Region;Kategorie;Typ;Titel;Details;Startzeit;Dauer;Booking Code;Maps;Home;Hometitle;Sunrise;Sunset;Wichtig;
-1;28. Aug;Toronto;Logistik;Flug;Flug MUC-FRA;Lufthansa LH 125;07:00;01:00;;https://www.google.com/maps/search/?api=1&query=Munich+Airport;;;06:20;20:15;2h Layover in FRA;2h Layover in FRA
-1;28. Aug;Toronto;Logistik;Flug;Flug FRA-YYZ;Air Canada AC 841;10:00;08:55;;https://www.google.com/maps/search/?api=1&query=Frankfurt+Airport;;;06:20;20:15;Ankunft Toronto 12:55 (Ortszeit);Ankunft Toronto 12:55 (Ortszeit)
-2;29. Aug;Toronto;Logistik;Onboarding;Do-It Introduction;;09:00;08:00;;;;;;;;
-3;30. Aug;Toronto;Logistik;Onboarding;Do-It Introduction;;09:00;08:00;;;;;;;;
-3;30. Aug;Victoria;Logistik;Flug;Flug YYZ-YYJ;Air Canada AC 1903;19:20;05:10;;https://www.google.com/maps/search/?api=1&query=Toronto+Pearson+Airport;;;06:25;20:10;Ankunft Victoria 21:30 (Ortszeit);Ankunft Victoria 21:30 (Ortszeit)
+Tag#;Datum;Region;Kategorie;Typ;Titel;Details;Startzeit;Dauer;Booking Code;Maps;Home;Hometitle;Sunrise;Sunset;Risiko;Shot idea;Objektiv;Bestes Licht;Wichtig
+1;28. Aug;Toronto;Logistik;Flug;Flug MUC-FRA;Lufthansa LH 125;07:00;01:00;;https://www.google.com/maps/search/?api=1&query=Munich+Airport;;;;06:20;20:15;;;;;2h Layover in FRA
+1;28. Aug;Toronto;Logistik;Flug;Flug FRA-YYZ;Air Canada AC 841;10:00;08:55;;https://www.google.com/maps/search/?api=1&query=Frankfurt+Airport;;;;06:20;20:15;;;;;Ankunft Toronto 12:55 (Ortszeit)
+3;30. Aug;Victoria;Logistik;Flug;Flug YYZ-YYJ;Air Canada AC 1903;19:20;05:10;;https://www.google.com/maps/search/?api=1&query=Toronto+Pearson+Airport;;;;06:25;20:10;;;;;Ankunft Victoria 21:30 (Ortszeit)
