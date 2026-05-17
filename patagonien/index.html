@@ -12,23 +12,23 @@
         .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
         .glass-alert { background: rgba(239, 68, 68, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 20px; }
         .glass-nav { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.4) 0%, rgba(15,23,42,0) 25%, rgba(15,23,42,0.8) 100%); }
-        .spot-text-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0) 20%, rgba(15,23,42,0) 50%, rgba(15,23,42,0.9) 100%); }
         
-        /* Fade-Out Effekt für die scrollende Liste */
+        /* Aggressiver Fade-Out Effekt: Karten verschwinden weit vor dem Header */
         .fade-mask {
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 150px);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 150px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 200px, black 350px);
+            mask-image: linear-gradient(to bottom, transparent 0%, transparent 200px, black 350px);
         }
 
         .snap-x { scroll-snap-type: x mandatory; scrollbar-width: none; }
         .snap-x::-webkit-scrollbar { display: none; }
         .snap-center { scroll-snap-align: center; scroll-snap-stop: always; }
         
-        body { background-color: #050505; color: #f8fafc; overscroll-behavior-y: contain; overflow: hidden; height: 100vh; }
+        body { background-color: #050505; color: #f8fafc; overscroll-behavior-y: contain; overflow: hidden; height: 100vh; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
         .item-done img { filter: grayscale(0.8) brightness(0.3); }
+        .spot-text-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); }
         
-        .calendar-capsule { background: white; border-radius: 10px; padding: 4px 8px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
     </style>
 </head>
 <body class="font-sans">
@@ -36,10 +36,10 @@
     <!-- HOME MODAL -->
     <div id="home-modal" class="hidden fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-xl items-center justify-center p-8" onclick="this.classList.remove('open')">
         <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-xs text-center shadow-2xl" onclick="event.stopPropagation()">
-            <div class="text-5xl mb-4">🏠</div>
-            <h2 class="text-2xl font-bold mb-2 text-slate-900 font-sans">Trip wechseln</h2>
-            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-3 shadow-lg font-sans">Zum Hauptmenü</button>
-            <button onclick="document.getElementById('home-modal').classList.remove('open')" class="w-full py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px] font-sans">Abbrechen</button>
+            <div class="text-5xl mb-4 text-slate-800">🏠</div>
+            <h2 class="text-2xl font-bold mb-2 text-slate-900">Trip wechseln</h2>
+            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-3 shadow-lg active:scale-95 transition-transform">Zum Hauptmenü</button>
+            <button onclick="document.getElementById('home-modal').classList.remove('open')" class="w-full py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Abbrechen</button>
         </div>
     </div>
 
@@ -47,7 +47,7 @@
     <div id="activity-overlay" class="hidden fixed inset-0 z-[250] bg-black flex flex-col font-sans">
         <div class="p-6 flex justify-between items-center z-30">
             <div class="flex gap-2">
-                <button onclick="renderActivitySlider('all')" class="glass-nav px-4 py-2 rounded-xl text-[10px] font-black text-white uppercase tracking-widest border-blue-500">Alle</button>
+                <button onclick="renderActivitySlider('all')" class="glass-nav px-4 py-2 rounded-xl text-[10px] font-black text-white uppercase border-blue-500">Alle</button>
                 <button onclick="renderActivitySlider('hiking')" class="glass-nav p-2 rounded-xl text-xl">🥾</button>
                 <button onclick="renderActivitySlider('photo')" class="glass-nav p-2 rounded-xl text-xl">📸</button>
             </div>
@@ -66,47 +66,48 @@
     </div>
 
     <!-- STATIC HEADER -->
-    <header class="fixed top-0 inset-x-0 z-[100] p-6 pt-8 font-sans pointer-events-none">
-        <div class="max-w-md mx-auto flex justify-between items-start pointer-events-auto">
+    <header class="fixed top-0 inset-x-0 z-[100] p-6 pt-10 pointer-events-none">
+        <div class="max-w-md mx-auto flex justify-between items-start">
             
-            <!-- Left Info Block (Long Press for Home) -->
-            <div id="trip-title-trigger" class="flex-1 transition-opacity active:opacity-50">
+            <!-- Left Block: Title, Region, Day+Date, Sun -->
+            <div id="trip-title-trigger" class="flex-1 pointer-events-auto active:opacity-50 transition-opacity">
                 <div id="display-trip-name" class="text-blue-400 text-[10px] font-black tracking-[0.4em] uppercase mb-1 drop-shadow-md">TRIP</div>
                 <h1 id="display-region" class="text-3xl font-black tracking-tighter uppercase italic leading-tight text-white drop-shadow-2xl">Lade...</h1>
                 
-                <div class="flex items-center gap-3 mt-2 text-white font-bold font-sans">
-                    <span id="display-day-label" class="text-[10px] tracking-widest opacity-70 uppercase">Tag -</span>
-                    <div class="flex items-center gap-2 text-[10px] bg-white/10 px-2 py-0.5 rounded-md backdrop-blur-md border border-white/10 font-mono">
+                <div class="flex flex-col gap-1.5 mt-3">
+                    <!-- Day & Date in one line -->
+                    <div class="flex items-center gap-2 text-[11px] font-bold text-white/90 tracking-wide uppercase">
+                        <span id="display-day-label">Tag -</span>
+                        <span class="opacity-30">•</span>
+                        <span id="display-date">--. ---</span>
+                    </div>
+                    
+                    <!-- Sun Info with Minimal Icon -->
+                    <div class="flex items-center gap-2.5 text-[10px] font-bold text-white/50 font-mono tracking-tight">
+                        <svg class="w-3 h-3 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="5" stroke-width="2.5"></circle>
+                            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-width="2.5" stroke-linecap="round"></path>
+                        </svg>
                         <span class="flex items-center gap-1">↑ <span id="sunrise">--:--</span></span>
                         <span class="flex items-center gap-1">↓ <span id="sunset">--:--</span></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Date & Hotel -->
-            <div class="flex flex-col items-end gap-4">
-                <div class="glass-nav px-2 py-1.5 rounded-2xl flex items-center gap-2 shadow-xl border border-white/10">
-                    <button onclick="changeDay(-1)" class="w-7 h-7 flex items-center justify-center text-sm">◀</button>
-                    <div class="calendar-capsule">
-                        <span id="display-day-num" class="text-slate-900 text-lg font-black leading-none">--</span>
-                        <span id="display-month" class="text-red-500 text-[8px] font-black uppercase">---</span>
-                    </div>
-                    <button onclick="changeDay(1)" class="w-7 h-7 flex items-center justify-center text-sm">▶</button>
-                </div>
-                <div id="home-preview" class="hidden">
-                    <img id="home-img" src="" class="w-24 h-24 object-cover rounded-3xl border-2 border-white/20 shadow-2xl bg-slate-800">
-                </div>
+            <!-- Right Side: Hotel Preview (Aligned with top of Region) -->
+            <div id="home-preview" class="hidden pointer-events-auto flex flex-col items-end">
+                <img id="home-img" src="" class="w-24 h-24 object-cover rounded-3xl border-2 border-white/20 shadow-2xl bg-slate-800">
+                <div class="text-[8px] font-black uppercase text-right mt-2 text-white/40 truncate w-24 tracking-widest" id="home-title">Hotel</div>
             </div>
         </div>
     </header>
 
-    <!-- SCROLLABLE CONTENT (WITH FADE MASK) -->
-    <div id="scroll-container" class="relative z-10 w-full h-screen overflow-y-auto pt-[280px] pb-32 px-6 fade-mask">
+    <!-- SCROLLABLE LIST -->
+    <div id="scroll-container" class="relative z-10 w-full h-screen overflow-y-auto pt-[280px] pb-40 px-6 fade-mask">
         <div class="max-w-md mx-auto">
             <div id="sec-alerts" class="space-y-3 mb-6"></div>
-            <h2 class="text-white/30 text-[10px] font-black uppercase tracking-[0.3em] mb-4 font-sans">Programm</h2>
             <div id="sec-fixtermine" class="space-y-4"></div>
-            <div id="empty-state" class="hidden py-20 text-center text-white/20 italic text-sm font-sans">Keine Termine heute.</div>
+            <div id="empty-state" class="hidden py-20 text-center text-white/10 italic text-sm">Keine Termine heute.</div>
         </div>
     </div>
 
@@ -160,9 +161,8 @@
             const region = getVal(first, "Region") || "Nature", regionKey = region.toLowerCase().trim();
             const dateStr = getVal(first, "Datum") || "--. ---";
 
-            document.getElementById('display-day-label').innerText = "TAG " + currentTagNum;
-            document.getElementById('display-day-num').innerText = dateStr.split(".")[0] || "--";
-            document.getElementById('display-month').innerText = dateStr.split(" ")[1] || "---";
+            document.getElementById('display-day-label').innerText = "Tag " + currentTagNum;
+            document.getElementById('display-date').innerText = dateStr;
             document.getElementById('display-region').innerText = region;
             document.getElementById('sunrise').innerText = getVal(first, "Sunrise") || "--:--";
             document.getElementById('sunset').innerText = getVal(first, "Sunset") || "--:--";
@@ -186,15 +186,15 @@
 
                 if (type === "alert" || getVal(item, "Risiko")) {
                     const d = document.createElement('div');
-                    d.className = "glass-alert p-5 shadow-lg mb-3 font-sans";
-                    d.innerHTML = `<div class="flex items-center gap-4"><span>⚠️</span><div><p class="text-[10px] font-black uppercase text-red-200">Wichtig</p><p class="text-sm font-bold">${getVal(item, "Titel")} ${getVal(item, "Risiko") ? ' - ' + getVal(item, "Risiko") : ''}</p></div></div>`;
+                    d.className = "glass-alert p-5 shadow-lg mb-3";
+                    d.innerHTML = `<div class="flex items-center gap-4"><span>⚠️</span><div><p class="text-[10px] font-black uppercase text-red-200">Alert</p><p class="text-sm font-bold text-white">${getVal(item, "Titel")} ${getVal(item, "Risiko") ? ' - ' + getVal(item, "Risiko") : ''}</p></div></div>`;
                     alertCont.appendChild(d);
                 }
 
                 if (start || getVal(item, "Kategorie").toLowerCase() === 'logistik') {
                     if (type === "alert") return;
                     const d = document.createElement('div');
-                    d.className = "glass-card p-5 shadow-xl mb-4 font-sans";
+                    d.className = "glass-card p-5 shadow-xl mb-4";
                     d.innerHTML = `
                         <div class="flex items-center gap-5 mb-3">
                             <div class="text-4xl">${icon}</div>
@@ -210,41 +210,43 @@
                         <p class="text-xs text-white/40 truncate italic mb-4 ml-14">${getVal(item, "Details")}</p>
                         <div class="flex justify-between items-center ml-14 pt-3 border-t border-white/5">
                             ${maps ? `<a href="${maps}" target="_blank" class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest shadow-lg">📍 MAPS</a>` : '<span></span>'}
-                            <span class="text-[9px] font-mono text-white/20 uppercase">${getVal(item, "BookingCode") || getVal(item, "Anbieter")}</span>
+                            <span class="text-[9px] font-mono text-white/20 uppercase">${getVal(item, "BookingCode") || getVal(item, "Anbieter") || ""}</span>
                         </div>`;
                     fixCont.appendChild(d);
                 }
             });
 
+            // Hotel Peek Logic
             const homeItem = items.find(i => getVal(i, "Home") !== "");
             const hImg = document.getElementById('home-img');
+            const hPre = document.getElementById('home-preview');
+            const overlay = document.getElementById('image-overlay');
+            const overImg = document.getElementById('overlay-img');
+
             if(homeItem) {
-                document.getElementById('home-preview').classList.remove('hidden');
+                hPre.classList.remove('hidden');
                 hImg.src = getVal(homeItem, "Home");
-                const showP = (e) => { e.preventDefault(); isPeeking = true; document.getElementById('overlay-img').src = getVal(homeItem, "Home"); document.getElementById('image-overlay').classList.remove('hidden'); };
-                const hideP = () => { document.getElementById('image-overlay').classList.add('hidden'); setTimeout(() => { isPeeking = false; }, 100); };
-                hImg.onmousedown = showP; hImg.ontouchstart = showP; window.onmouseup = hideP; window.ontouchend = hideP;
-            } else document.getElementById('home-preview').classList.add('hidden');
+                document.getElementById('home-title').innerText = getVal(homeItem, "Hometitle") || getVal(homeItem, "Titel");
+                
+                const startPeek = (e) => { e.preventDefault(); isPeeking = true; overImg.src = getVal(homeItem, "Home"); overlay.classList.remove('hidden'); };
+                const endPeek = () => { overlay.classList.add('hidden'); setTimeout(() => isPeeking = false, 100); };
+                
+                hImg.onmousedown = startPeek; hImg.ontouchstart = startPeek;
+                window.onmouseup = endPeek; window.ontouchend = endPeek;
+            } else hPre.classList.add('hidden');
         }
 
-        // SWIPE GESTEN FÜR TAGESWECHSEL
+        // SWIPE DAY CHANGE
         let sX = 0, sY = 0;
         document.addEventListener('touchstart', e => { sX = e.touches[0].clientX; sY = e.touches[0].clientY; }, { passive: true });
         document.addEventListener('touchend', e => {
             const overlays = ['activity-overlay', 'image-overlay', 'home-modal'];
-            const anyVisible = overlays.some(id => !document.getElementById(id).classList.contains('hidden'));
-            if (anyVisible || isPeeking) return;
-            
-            let dX = sX - e.changedTouches[0].clientX;
-            let dY = sY - e.changedTouches[0].clientY;
-
-            // Nur wechseln, wenn Horizontaler Swipe deutlich stärker als Vertikaler Scroll
-            if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 80) {
-                changeDay(dX > 0 ? 1 : -1);
-            }
+            if (overlays.some(id => !document.getElementById(id).classList.contains('hidden')) || isPeeking) return;
+            let dX = sX - e.changedTouches[0].clientX, dY = sY - e.changedTouches[0].clientY;
+            if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 80) changeDay(dX > 0 ? 1 : -1);
         }, { passive: true });
 
-        // ACTIVITY HUB ENGINE (Hikes & Spots)
+        // ACTIVITY HUB
         function openActivityHub() { renderActivitySlider('all'); document.getElementById('activity-overlay').classList.remove('hidden'); }
         function renderActivitySlider(f) {
             const region = document.getElementById('display-region').innerText.toLowerCase().trim();
@@ -255,7 +257,7 @@
             combined.forEach(item => {
                 const isH = item.cat === 'hiking', id = getVal(item, "Title"), done = (localStorage.getItem('done_items') || '[]').includes(id);
                 const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`;
-                card.innerHTML = `<img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl font-sans">${getVal(item, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest"><span class="bg-white/10 px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed font-sans">"${getVal(item, "Details")}"</p><div class="flex items-center gap-3"><a href="${isH ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl font-sans">✓</button></div></div>`;
+                card.innerHTML = `<img src="${getVal(item, "Image")}" class="absolute inset-0 w-full h-full object-cover"><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl">${getVal(item, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest"><span class="bg-white/10 px-2 py-1 rounded">📏 ${getVal(item, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded">▲ ${getVal(item, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed">"${getVal(item, "Details")}"</p><div class="flex items-center gap-3"><a href="${isH ? getVal(item, "KomootLink") : getVal(item, "Maps")}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="toggleGlobalDone('${id}')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'} text-2xl transition-all shadow-xl font-sans">✓</button></div></div>`;
                 slider.appendChild(card);
             });
         }
@@ -263,7 +265,7 @@
         function closeOverlay(id) { document.getElementById(id).classList.add('hidden'); }
         function changeDay(d) { if (days[currentDayIndex + d]) { currentDayIndex += d; render(); document.getElementById('scroll-container').scrollTo(0,0); } }
 
-        // Home Modal Long Press
+        // Home Long Press
         let pressTimer;
         const trigger = document.getElementById('trip-title-trigger');
         trigger.onmousedown = () => pressTimer = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600);
