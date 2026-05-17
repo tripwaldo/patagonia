@@ -15,14 +15,16 @@
 </head>
 <body class="bg-slate-950 text-white font-sans min-h-screen p-6 pb-12">
 
-    <header class="text-center mt-8 mb-12 font-sans">
+    <header class="text-center mt-8 mb-12">
         <h1 class="text-4xl font-black tracking-tighter uppercase mb-1 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
             Trip Planer Pro
         </h1>
         <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] font-bold text-center">Family Travel Hub</p>
     </header>
 
-    <div id="trip-container" class="max-w-md mx-auto space-y-6"></div>
+    <div id="trip-container" class="max-w-md mx-auto space-y-6">
+        <!-- Trips werden hier geladen -->
+    </div>
 
     <script>
         const icsUrl = "https://www.tripit.com/feed/ical/private/BBA87953-1BD926860BD8421FC64ECFA593BA7A11/tripit.ics";
@@ -30,7 +32,7 @@
 
         const tripSettings = {
             "patagonien": { title: "Patagonien", sub: "Chile & Argentinien", img: "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=compress&w=600", wer: "👨‍👩‍👧‍👦", defaultDate: "15. Okt 2026", sortDate: "20261015" },
-            "toskana": { title: "Toskana", sub: "Italien Genussreise", img: "https://images.pexels.com/photos/1534445/pexels-photo-1534445.jpeg?auto=compress&w=600", wer: "👨‍🦱👩‍🦰", defaultDate: "29. May 2026", sortDate: "20260629" },
+            "toskana": { title: "Toskana", sub: "Italien Genussreise", img: "https://images.pexels.com/photos/1534445/pexels-photo-1534445.jpeg?auto=compress&w=600", wer: "👨‍🦱👩‍🦰", defaultDate: "29. May 2026", sortDate: "20260529" },
             "galizien": { title: "Galizien", sub: "Spanien Nordküste", img: "https://images.pexels.com/photos/3565916/pexels-photo-3565916.jpeg?auto=compress&w=600", wer: "👨‍🦱👦👧", defaultDate: "01. Aug 2026", sortDate: "20260801" },
             "australien": { title: "Australien", sub: "Work & Travel", img: "https://images.pexels.com/photos/2101037/pexels-photo-2101037.jpeg?auto=compress&w=600", wer: "👨‍🦱", defaultDate: "29. Jun 2026", sortDate: "20260629" },
             "kanada": { title: "Kanada", sub: "Vancouver Island", img: "https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=600", wer: "👩‍🦰", defaultDate: "29. Aug 2026", sortDate: "20260829" }
@@ -39,8 +41,8 @@
         let foundDates = {};
 
         async function init() {
-            await fetchTripIt();
-            renderHub();
+            renderHub(); 
+            await fetchTripIt(); 
         }
 
         async function fetchTripIt() {
@@ -64,25 +66,35 @@
                         });
                     }
                 });
-            } catch (e) { console.log("TripIt Sync hakt."); }
+                renderHub(); 
+            } catch (e) { console.log("TripIt Sync hakt - nutze Default Daten."); }
         }
 
         function renderHub() {
             const container = document.getElementById('trip-container');
             const months = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
             
-            // SORTIERUNG: Absteigend nach Datum (Neuere zuerst)
+            // SORTIERUNG: Aufsteigend (Früheste Reise zuerst)
             const sortedKeys = Object.keys(tripSettings).sort((a, b) => {
                 const dateA = foundDates[a] || tripSettings[a].sortDate;
                 const dateB = foundDates[b] || tripSettings[b].sortDate;
-                return dateB.localeCompare(dateA);
+                return dateA.localeCompare(dateB); // dateA vor dateB für aufsteigend
             });
 
             container.innerHTML = sortedKeys.map(key => {
                 const cfg = tripSettings[key];
-                let d = foundDates[key] ? foundDates[key].substring(6,8) : cfg.defaultDate.split(". ")[0];
-                let m = foundDates[key] ? months[parseInt(foundDates[key].substring(4,6))] : cfg.defaultDate.split(" ")[1];
-                let y = foundDates[key] ? foundDates[key].substring(0,4) : cfg.defaultDate.split(" ")[2];
+                
+                let day, mon, year;
+                if (foundDates[key]) {
+                    year = foundDates[key].substring(0, 4);
+                    mon = months[parseInt(foundDates[key].substring(4, 6))];
+                    day = foundDates[key].substring(6, 8);
+                } else {
+                    const parts = cfg.defaultDate.split(" ");
+                    day = parts[0].replace(".", "");
+                    mon = parts[1];
+                    year = parts[2];
+                }
 
                 return `
                     <a href="./${key}/index.html" class="trip-card block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl mb-6">
@@ -90,13 +102,21 @@
                             <img src="${cfg.img}" class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
                         </div>
-                        <div class="absolute inset-0 p-6 flex flex-col justify-between font-sans">
+                        <div class="absolute inset-0 p-6 flex flex-col justify-between">
                             <div class="flex justify-between items-start">
-                                <div class="calendar-icon"><div class="cal-m">${m}</div><div class="cal-d">${d}</div></div>
-                                <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">${y}</div>
+                                <div class="calendar-icon">
+                                    <div class="cal-m">${mon}</div>
+                                    <div class="cal-d">${day}</div>
+                                </div>
+                                <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10 shadow-lg">
+                                    ${year}
+                                </div>
                             </div>
                             <div class="flex justify-between items-end">
-                                <div><h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${cfg.title}</h2><p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1">${cfg.sub}</p></div>
+                                <div>
+                                    <h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${cfg.title}</h2>
+                                    <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1">${cfg.sub}</p>
+                                </div>
                                 <span class="text-2xl drop-shadow-lg">${cfg.wer}</span>
                             </div>
                         </div>
