@@ -15,68 +15,32 @@
 </head>
 <body class="bg-slate-950 text-white font-sans min-h-screen p-6 pb-12">
 
-    <header class="text-center mt-8 mb-12">
+    <header class="text-center mt-8 mb-12 font-sans">
         <h1 class="text-4xl font-black tracking-tighter uppercase mb-1 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
             Trip Planer Pro
         </h1>
         <p class="text-slate-500 text-[10px] uppercase tracking-[0.4em] font-bold text-center">Family Travel Hub</p>
     </header>
 
-    <!-- Container für alle Trips -->
-    <div id="trip-container" class="max-w-md mx-auto space-y-6">
-        <!-- Wird per JS befüllt -->
-    </div>
+    <div id="trip-container" class="max-w-md mx-auto space-y-6"></div>
 
     <script>
         const icsUrl = "https://www.tripit.com/feed/ical/private/BBA87953-1BD926860BD8421FC64ECFA593BA7A11/tripit.ics";
         const proxyUrl = "https://corsproxy.io/?";
 
-        // -------------------------------------------------------------------------
-        // DEINE REISE-ORDNER (Immer sichtbar)
-        // -------------------------------------------------------------------------
         const tripSettings = {
-            "patagonien": { 
-                title: "Patagonien", 
-                sub: "Chile & Argentinien", 
-                img: "https://images.pexels.com/photos/33149760/pexels-photo-33149760.jpeg?auto=compress&w=600", 
-                wer: "👨‍👩‍👧‍👦",
-                defaultDate: "15. Okt", defaultYear: "2024" // Fallback, falls TripIt noch nicht geladen
-            },
-            "toskana": { 
-                title: "Toskana", 
-                sub: "Italien Genussreise", 
-                img: "https://images.pexels.com/photos/14506875/pexels-photo-14506875.jpeg?auto=compress&w=600", 
-                wer: "👨‍🦱👩‍🦰",
-                defaultDate: "20. Jun", defaultYear: "2024"
-            },
-            "galizien": { 
-                title: "Galizien", 
-                sub: "Spanien Nordküste", 
-                img: "https://images.pexels.com/photos/26202673/pexels-photo-26202673.jpeg?auto=compress&w=600",
-                wer: "👨‍🦱👦👧",
-                defaultDate: "05. Sep", defaultYear: "2024"
-            },
-            "australien": { 
-                title: "Paul Australien", 
-                sub: "Work & Travel", 
-                img: "https://images.pexels.com/photos/36957986/pexels-photo-36957986.jpeg?auto=compress&w=600", 
-                wer: "👨‍🦱",
-                defaultDate: "01. Jan", defaultYear: "2025"
-            },
-            "kanada": { 
-                title: "Rosa Kanada", 
-                sub: "Sooke / Vancouver Island", 
-                img: "https://images.pexels.com/photos/34875613/pexels-photo-34875613.jpeg?auto=compress&w=600", 
-                wer: "👩‍🦰",
-                defaultDate: "10. Aug", defaultYear: "2024"
-            }
+            "patagonien": { title: "Patagonien", sub: "Chile & Argentinien", img: "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=compress&w=600", wer: "👨‍👩‍👧‍👦", defaultDate: "15. Okt 2024", sortDate: "20241015" },
+            "toskana": { title: "Toskana", sub: "Italien Genussreise", img: "https://images.pexels.com/photos/1534445/pexels-photo-1534445.jpeg?auto=compress&w=600", wer: "👨‍🦱👩‍🦰", defaultDate: "20. Jun 2024", sortDate: "20240620" },
+            "galizien": { title: "Galizien", sub: "Spanien Nordküste", img: "https://images.pexels.com/photos/3565916/pexels-photo-3565916.jpeg?auto=compress&w=600", wer: "👨‍🦱👦👧", defaultDate: "05. Sep 2024", sortDate: "20240905" },
+            "australien": { title: "Australien", sub: "Work & Travel", img: "https://images.pexels.com/photos/2101037/pexels-photo-2101037.jpeg?auto=compress&w=600", wer: "👨‍🦱", defaultDate: "01. Jan 2025", sortDate: "20250101" },
+            "kanada": { title: "Kanada", sub: "Vancouver Island", img: "https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=600", wer: "👩‍🦰", defaultDate: "10. Aug 2024", sortDate: "20240810" }
         };
 
-        let foundDates = {}; // Speicher für TripIt-Daten
+        let foundDates = {};
 
         async function init() {
-            renderHub(); // Erstmal alles anzeigen (mit Fallback-Daten)
-            await fetchTripIt(); // Dann TripIt im Hintergrund laden und Daten updaten
+            await fetchTripIt();
+            renderHub();
         }
 
         async function fetchTripIt() {
@@ -85,7 +49,6 @@
                 const data = await response.text();
                 const lines = data.split(/\r?\n/);
                 let currentEvent = {};
-
                 lines.forEach(line => {
                     if (line.startsWith("BEGIN:VEVENT")) currentEvent = {};
                     if (line.startsWith("SUMMARY:")) currentEvent.summary = line.substring(8).toLowerCase();
@@ -96,64 +59,13 @@
                     if (line.startsWith("END:VEVENT")) {
                         Object.keys(tripSettings).forEach(key => {
                             if (currentEvent.summary && currentEvent.summary.includes(key)) {
-                                if (!foundDates[key] || currentEvent.start < foundDates[key]) {
-                                    foundDates[key] = currentEvent.start;
-                                }
+                                if (!foundDates[key] || currentEvent.start < foundDates[key]) foundDates[key] = currentEvent.start;
                             }
                         });
                     }
                 });
-                renderHub(); // Mit echten TripIt-Daten neu zeichnen
-            } catch (e) { console.log("TripIt Sync fehlgeschlagen, nutze Fallbacks."); }
+            } catch (e) { console.log("TripIt Sync hakt."); }
         }
 
         function renderHub() {
             const container = document.getElementById('trip-container');
-            const months = ["", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
-            
-            container.innerHTML = Object.keys(tripSettings).map(key => {
-                const cfg = tripSettings[key];
-                let displayDay = cfg.defaultDate.split(".")[0];
-                let displayMonth = cfg.defaultDate.split(" ")[1];
-                let displayYear = cfg.defaultYear;
-
-                // Falls TripIt Daten hat, überschreibe Fallbacks
-                if (foundDates[key]) {
-                    displayYear = foundDates[key].substring(0, 4);
-                    displayMonth = months[parseInt(foundDates[key].substring(4, 6))];
-                    displayDay = foundDates[key].substring(6, 8);
-                }
-
-                return `
-                    <a href="./${key}/index.html" class="trip-card block group relative bg-slate-900 rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl transition-all active:scale-95">
-                        <div class="h-52 w-full relative">
-                            <img src="${cfg.img}" class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-                        </div>
-                        <div class="absolute inset-0 p-6 flex flex-col justify-between">
-                            <div class="flex justify-between items-start">
-                                <div class="calendar-icon">
-                                    <div class="cal-m">${displayMonth}</div>
-                                    <div class="cal-d">${displayDay}</div>
-                                </div>
-                                <div class="bg-blue-600/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/10">
-                                    ${displayYear}
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <div>
-                                    <h2 class="text-3xl font-black italic tracking-tighter uppercase leading-none">${cfg.title}</h2>
-                                    <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-1">${cfg.sub}</p>
-                                </div>
-                                <span class="text-2xl drop-shadow-lg">${cfg.wer}</span>
-                            </div>
-                        </div>
-                    </a>
-                `;
-            }).join('');
-        }
-
-        init();
-    </script>
-</body>
-</html>
