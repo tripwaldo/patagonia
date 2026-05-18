@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trip Planer Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        .hidden { display: none !important; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .hero-gradient { background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%); }
+        body { background-color: #050505; color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; overflow: hidden; height: 100vh; }
+        .fade-mask { -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 150px); mask-image: linear-gradient(to bottom, transparent 0%, black 150px); }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="overscroll-none">
+
+    <!-- BACKGROUND -->
+    <div class="fixed inset-0 z-0">
+        <img id="hero-img" src="" class="w-full h-full object-cover opacity-60">
+        <div class="absolute inset-0 hero-gradient"></div>
+    </div>
+
+    <!-- HEADER (STAY INFO) -->
+    <header class="fixed top-0 inset-x-0 z-50 p-6 pt-10">
+        <div class="max-w-md mx-auto flex justify-between items-start">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1" onclick="window.location.href='../index.html'">
+                    <span id="display-flag" class="text-2xl">🇦🇷</span>
+                    <h1 id="display-region" class="text-3xl font-black tracking-tighter uppercase italic text-white">Region</h1>
+                </div>
+                <div id="location-stay-span" class="text-blue-400 text-xs font-bold tracking-widest uppercase mb-4">15. Okt — 18. Okt</div>
+                
+                <!-- WECHSELKURS RECHNER -->
+                <div class="glass inline-flex items-center px-3 py-2 rounded-2xl gap-3 shadow-xl">
+                    <span class="text-emerald-400 font-bold text-xs">€</span>
+                    <input type="number" id="calc-input" placeholder="Betrag" class="bg-transparent w-20 text-white font-bold outline-none text-sm" oninput="convertCurrency(this.value)">
+                    <span class="text-white/30 text-xs">=</span>
+                    <span id="calc-result" class="text-emerald-400 font-black text-sm">0.00</span>
+                    <span id="display-currency" class="text-white/40 text-[10px] font-bold uppercase tracking-tighter">ARS</span>
+                </div>
+            </div>
+
+            <div id="home-preview" class="hidden flex flex-col items-end pt-1" onclick="openHotelOverlay()">
+                <img id="home-img" src="" class="w-24 h-24 object-cover rounded-3xl border-2 border-white/30 shadow-2xl">
+                <div id="stay-counter" class="bg-blue-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full -mt-3 relative z-10 shadow-lg uppercase">Tag 1/3</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN SCROLL AREA -->
+    <div id="scroll-container" class="relative z-10 w-full h-screen overflow-y-auto pt-[280px] pb-32 px-6 fade-mask">
+        <div class="max-w-md mx-auto space-y-6">
+            
+            <!-- HIGHLIGHT DES TAGES -->
+            <div id="daily-highlight" class="hidden">
+                <p class="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-3 ml-2">Tages-Highlight</p>
+                <div class="glass p-5 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden" onclick="openActivityHub()">
+                    <div id="highlight-icon" class="text-4xl mb-4">🥾</div>
+                    <h3 id="highlight-title" class="text-xl font-black text-white leading-tight mb-2"> Fitz Roy Trek</h3>
+                    <p id="highlight-details" class="text-sm text-white/60 italic leading-relaxed">"Die spektakulärste Aussicht Südamerikas..."</p>
+                    <div class="absolute top-6 right-6 text-white/10 text-6xl font-black uppercase tracking-tighter">GO</div>
+                </div>
+            </div>
+
+            <!-- LOGISTIK (NUR DAS ESSENTIELLE) -->
+            <div id="logistics-summary" class="space-y-4">
+                <p class="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-3 ml-2">Timing</p>
+                <div id="sec-fixtermine" class="space-y-3"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="fixed bottom-8 inset-x-0 z-[100] px-6 pointer-events-none">
+        <div class="max-w-md mx-auto flex justify-between items-center pointer-events-auto">
+            <div class="glass flex items-center p-1.5 rounded-2xl shadow-2xl border border-white/10">
+                <button onclick="changeDay(-1)" class="w-12 h-12 flex items-center justify-center text-white active:scale-75 transition-transform text-xl">◀</button>
+                <div class="w-px h-6 bg-white/10 mx-1"></div>
+                <button onclick="changeDay(1)" class="w-12 h-12 flex items-center justify-center text-white active:scale-75 transition-transform text-xl">▶</button>
+            </div>
+            <button onclick="openActivityHub()" class="w-16 h-16 bg-white text-slate-900 rounded-3xl shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform font-bold">
+                🗺️
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // System Clean Init
+        let tripData = [], spotData = [], hikeData = [], days = [], currentDayIndex = 0, currentRateValue = 1;
+
+        function getVal(obj, key) { if (!obj) return ""; const f = Object.keys(obj).find(k => k.toLowerCase().trim().replace(/\s/g, '') === key.toLowerCase().trim().replace(/\s/g, '')); return f ? obj[f].toString().trim() : ""; }
+
+        function loadCSV() {
+            const config = { download: true, header: true, skipEmptyLines: true };
+            Papa.parse("trip_data.csv", { ...config, complete: r => { 
+                tripData = r.data; 
+                Papa.parse("hikes.csv", { ...config, complete: r2 => { 
+                    hikeData = r2.data; 
+                    processData(); 
+                }});
+            }});
+        }
+
+        function convertCurrency(val) {
+            const res = val / currentRateValue;
+            document.getElementById('calc-result').innerText = res.toFixed(2) + " €";
+        }
+
+        function processData() {
+            days = [...new Set(tripData.map(i => parseInt(getVal(i, "Tag#"))))].filter(n => !isNaN(n)).sort((a,b) => a-b);
+            // Heute finden Logik...
+            render();
+        }
+
+        function render() {
+            const currentTagNum = days[currentDayIndex];
+            const items = tripData.filter(i => parseInt(getVal(i, "Tag#")) === currentTagNum);
+            const first = items[0] || {};
+            const region = getVal(first, "Region") || "Adventure";
+            
+            // Wechselkurs setzen
+            const rateStr = getVal(first, "Rate");
+            if(rateStr) {
+                currentRateValue = parseFloat(rateStr.replace(/[^\d.,]/g, '').replace(',', '.'));
+                document.getElementById('display-currency').innerText = rateStr.replace(/[\d., ]/g, '');
+            }
+
+            // UI füllen
+            document.getElementById('display-region').innerText = region;
+            document.getElementById('hero-img').src = getVal(first, "RegionImage") || "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=compress&w=1200";
+
+            // Stay Info
+            document.getElementById('location-stay-span').innerText = "VON — BIS DATUM"; // Hier deine Logik einbauen
+            
+            // Hotel Preview
+            const hImg = document.getElementById('home-img');
+            if(getVal(first, "Home")) {
+                document.getElementById('home-preview').classList.remove('hidden');
+                hImg.src = getVal(first, "Home");
+            }
+
+            // Logistics (Was muss ich heute wissen?)
+            const fixCont = document.getElementById('sec-fixtermine');
+            fixCont.innerHTML = "";
+            items.filter(i => getVal(i, "Startzeit")).forEach(i => {
+                const d = document.createElement('div');
+                d.className = "glass p-4 rounded-3xl flex justify-between items-center";
+                d.innerHTML = `<div><p class="text-[9px] font-bold text-blue-400 uppercase">${getVal(i,"Typ")}</p><p class="font-bold text-white text-sm">${getVal(i,"Titel")}</p></div><div class="text-right"><p class="font-black text-white text-sm">${getVal(i,"Startzeit")}</p><p class="text-[9px] text-white/30 uppercase">Dauer: ${getVal(i,"Dauer")}</p></div>`;
+                fixCont.appendChild(d);
+            });
+        }
+
+        function changeDay(d) { if(days[currentDayIndex+d]) { currentDayIndex+=d; render(); } }
+
+        loadCSV();
+    </script>
+</body>
+</html>
