@@ -11,77 +11,31 @@
         .glass-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
         .glass-alert { background: rgba(239, 68, 68, 0.25); backdrop-filter: blur(12px); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 20px; }
         .glass-nav { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.15); }
-        
-        /* Vertikale Sidebar links */
-        .glass-sidebar { 
-            background: rgba(15, 23, 42, 0.6); 
-            backdrop-filter: blur(15px); 
-            border-right: 1px solid rgba(255, 255, 255, 0.1); 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .vertical-text {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-        }
-
-        /* Kalender Icon in Sidebar */
-        .calendar-icon { 
-            width: 42px; 
-            height: 46px; 
-            background: white; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            line-height: 1; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
-            margin-bottom: 20px;
-        }
-        .cal-m { background: #ef4444; color: white; width: 100%; font-size: 8px; font-weight: 800; padding: 2px 0; text-align: center; text-transform: uppercase; }
-        .cal-d { color: #1e293b; font-size: 18px; font-weight: 900; padding-top: 2px; }
-
+        .glass-sidebar { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(15px); border-right: 1px solid rgba(255, 255, 255, 0.1); writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
         .hero-gradient { background: linear-gradient(to bottom, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0) 20%, rgba(15,23,42,0) 50%, rgba(15,23,42,0.9) 100%); }
         .fade-mask { -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 220px, black 380px, black calc(100% - 150px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, transparent 220px, black 380px, black calc(100% - 150px), transparent 100%); }
-        
         .snap-x { scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .snap-x::-webkit-scrollbar { display: none; }
         .snap-center { scroll-snap-align: center; scroll-snap-stop: always; }
-        
         body { background-color: #050505; color: #f8fafc; overscroll-behavior-y: contain; overflow: hidden; height: 100vh; font-family: ui-sans-serif, system-ui, sans-serif; }
         .item-done img { filter: grayscale(0.8) brightness(0.3); }
         .spot-text-gradient { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%); }
         .view-btn.active { background: white; color: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .filter-btn.active { border: 2px solid #3b82f6; background: rgba(59, 130, 246, 0.2); color: white; }
-        * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
     </style>
 </head>
 <body class="font-sans">
 
     <!-- SIDEBAR -->
-    <div id="trip-sidebar" class="fixed left-0 top-0 h-full w-14 z-[120] glass-sidebar pt-10 pointer-events-auto active:opacity-60 transition-opacity">
-        <!-- Calendar Icon -->
-        <div class="calendar-icon">
-            <div class="cal-m" id="display-month">---</div>
-            <div class="cal-d" id="display-day-num">--</div>
-        </div>
-        <!-- Trip Name & Day vertical -->
-        <div class="vertical-text flex items-center gap-4">
-            <span id="display-sidebar-tag" class="text-white font-black text-xs uppercase tracking-widest">TAG 1</span>
-            <span class="text-white/20 text-xs">•</span>
-            <span id="display-trip-name" class="text-blue-400 text-[11px] font-black tracking-[0.5em] uppercase">TRIP</span>
-        </div>
+    <div id="trip-sidebar" class="fixed left-0 top-0 h-full w-12 z-[120] glass-sidebar flex items-center justify-center pointer-events-auto active:opacity-60 transition-opacity">
+        <span id="display-sidebar-title" class="text-blue-400 text-[11px] font-black tracking-[0.5em] uppercase py-8 italic">TRIP — TAG 1</span>
     </div>
 
     <!-- HOTEL OVERLAY -->
-    <div id="hotel-overlay" class="hidden fixed inset-0 z-[280] bg-black flex flex-col">
+    <div id="hotel-overlay" class="hidden fixed inset-0 z-[280] bg-black flex flex-col font-sans">
         <div class="absolute inset-0 z-0"><img id="hotel-overlay-img" src="" class="w-full h-full object-cover opacity-60"><div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60"></div></div>
         <div class="relative z-10 p-8 h-full flex flex-col justify-between">
             <div class="flex justify-between items-start">
-                <div class="flex-1"><p class="text-blue-400 text-xs font-black uppercase tracking-[0.3em] mb-2">Deine Unterkunft</p><h2 id="hotel-overlay-title" class="text-3xl font-black leading-tight uppercase italic text-white">Hotel</h2></div>
+                <div class="flex-1"><p class="text-blue-400 text-xs font-black uppercase tracking-[0.3em] mb-2">Deine Unterkunft</p><h2 id="hotel-overlay-title" class="text-3xl font-black leading-tight uppercase italic drop-shadow-2xl">Hotel Name</h2></div>
                 <button onclick="closeOverlay('hotel-overlay')" class="glass-nav w-12 h-12 rounded-full flex items-center justify-center text-3xl text-white font-bold border border-white/20">&times;</button>
             </div>
             <div class="space-y-6 mb-12">
@@ -90,7 +44,7 @@
                         <div><p class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Check-In</p><p id="hotel-stay-from" class="text-lg font-black text-white italic">--. ---</p></div>
                         <div><p class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Check-Out</p><p id="hotel-stay-to" class="text-lg font-black text-white italic">--. ---</p></div>
                     </div>
-                    <div class="mt-6 pt-4 border-t border-white/5 flex items-baseline gap-2"><span id="hotel-nights" class="text-3xl font-black text-blue-400">0</span><span class="text-xs font-bold text-white/60 uppercase tracking-widest italic font-sans">Nächte</span></div>
+                    <div class="mt-6 pt-4 border-t border-white/5 flex items-baseline gap-2"><span id="hotel-nights" class="text-3xl font-black text-blue-400">0</span><span class="text-xs font-bold text-white/60 uppercase tracking-widest italic">Nächte</span></div>
                 </div>
                 <div class="flex flex-col gap-3">
                     <a id="hotel-maps-link" href="#" target="_blank" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-center shadow-xl">📍 Auf Karte zeigen</a>
@@ -101,18 +55,18 @@
     </div>
 
     <!-- HUB MODAL -->
-    <div id="home-modal" class="hidden fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-xl items-center justify-center p-8 font-sans" onclick="this.classList.remove('open')">
-        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-xs text-center shadow-2xl">
+    <div id="home-modal" class="hidden fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-xl items-center justify-center p-8" onclick="this.classList.remove('open')">
+        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-xs text-center shadow-2xl" onclick="event.stopPropagation()">
             <div class="text-5xl mb-4">🏠</div>
             <h2 class="text-2xl font-bold mb-2 text-slate-900">Trip wechseln</h2>
-            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-3 shadow-lg text-sm">Zum Hauptmenü</button>
+            <button onclick="window.location.href='../index.html'" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-3 shadow-lg">Zum Hauptmenü</button>
             <button onclick="document.getElementById('home-modal').classList.remove('open')" class="w-full py-3 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Abbrechen</button>
         </div>
     </div>
 
-    <!-- ACTIVITY HUB OVERLAY -->
+    <!-- ACTIVITY OVERLAY -->
     <div id="activity-overlay" class="hidden fixed inset-0 z-[250] bg-black flex flex-col font-sans">
-        <div class="p-6 flex justify-between items-center z-30">
+        <div class="p-6 flex justify-between items-center z-30 font-sans">
             <div class="flex gap-2">
                 <button onclick="renderActivitySlider('all')" id="filter-all" class="filter-btn glass-nav px-4 py-2 rounded-xl text-[10px] font-black text-white uppercase border border-white/10">Alle</button>
                 <button onclick="renderActivitySlider('hiking')" id="filter-hiking" class="filter-btn glass-nav p-2 rounded-xl text-xl border border-white/10">🥾</button>
@@ -127,38 +81,42 @@
 
     <div class="fixed inset-0 z-0"><img id="hero-img" src="" class="w-full h-full object-cover opacity-60 transition-opacity duration-1000"><div class="absolute inset-0 hero-gradient"></div></div>
 
-    <!-- STATIC HEADER (Shifted right for sidebar) -->
-    <header class="fixed top-0 left-14 right-0 z-[100] p-6 pt-10 pointer-events-none font-sans">
-        <div class="max-w-md mx-auto flex justify-between items-start">
-            <div id="trip-title-trigger" class="flex-1 pointer-events-auto active:opacity-50 transition-opacity">
+    <!-- STATIC HEADER -->
+    <header class="fixed top-0 left-12 right-0 z-[100] p-6 pt-10 pointer-events-none font-sans">
+        <div class="max-w-md mx-auto flex justify-between items-start font-sans">
+            <div id="trip-title-trigger" class="flex-1 pointer-events-auto active:opacity-50 transition-opacity font-sans">
+                <div id="display-trip-name-top" class="text-blue-400 text-[10px] font-black tracking-[0.4em] uppercase mb-1 drop-shadow-md">TRIP</div>
                 <h1 id="display-region" class="text-3xl font-black tracking-tighter uppercase italic leading-tight text-white drop-shadow-2xl">Lade...</h1>
+                
                 <div class="flex flex-col gap-1.5 mt-4">
-                    <div id="location-stay-span" class="text-blue-300 text-[14px] font-black uppercase tracking-[0.1em] mb-2 drop-shadow-md">DATUM — DATUM</div>
+                    <div id="location-day-counter" class="text-white text-[15px] font-black uppercase tracking-[0.1em] drop-shadow-md">TAG 1 / 1 HIER</div>
+                    <div id="location-stay-span" class="text-blue-300 text-[12px] font-bold uppercase tracking-widest opacity-90">DATUM — DATUM</div>
+
                     <div class="flex items-center gap-3 text-[14px] font-black text-white/70 font-mono tracking-tight mt-1">
                         <svg class="w-4 h-4 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" stroke-width="3"></circle><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-width="3" stroke-linecap="round"></path></svg>
                         <span class="flex items-center gap-1.5 font-bold italic">↑ <span id="sunrise">--:--</span></span>
                         <span class="flex items-center gap-1.5 font-bold italic ml-1">↓ <span id="sunset">--:--</span></span>
                     </div>
-                    <div id="rate-container" class="hidden flex items-center gap-2 text-[14px] font-black text-emerald-400 font-mono tracking-tight font-sans"><span>💶</span><span id="display-rate">--</span></div>
                 </div>
             </div>
-            <div id="home-preview" class="hidden pointer-events-auto flex flex-col items-end pt-1 font-sans" onclick="openHotelOverlay()">
-                <img id="home-img" src="" class="w-24 h-24 object-cover rounded-3xl border-2 border-white/20 shadow-2xl bg-slate-800">
-                <div class="text-[8px] font-black uppercase text-right mt-2 text-white/40 truncate w-24 tracking-widest font-sans" id="home-title">Hotel</div>
+
+            <div id="home-preview" class="hidden pointer-events-auto flex flex-col items-end pt-2">
+                <img id="home-img" src="" class="w-24 h-24 object-cover rounded-3xl border-2 border-white/20 shadow-2xl bg-slate-800" onclick="openHotelOverlay()">
+                <div class="text-[8px] font-black uppercase text-right mt-2 text-white/40 truncate w-24 tracking-widest" id="home-title">Hotel</div>
             </div>
         </div>
     </header>
 
-    <!-- SCROLL AREA -->
-    <div id="scroll-container" class="relative z-10 pl-14 w-full h-screen overflow-y-auto pt-[340px] pb-48 px-6 fade-mask">
+    <!-- SCROLL CONTENT -->
+    <div id="scroll-container" class="relative z-10 pl-12 w-full h-screen overflow-y-auto pt-[340px] pb-48 px-6 fade-mask">
         <div class="max-w-md mx-auto">
-            <div id="sec-alerts" class="space-y-3 mb-6 font-sans"></div>
-            <div id="dynamic-content" class="space-y-4 pb-20 font-sans"></div>
+            <div id="sec-alerts" class="space-y-3 mb-6"></div>
+            <div id="dynamic-content" class="space-y-4 pb-20"></div>
         </div>
     </div>
 
     <!-- BOTTOM COMMAND BAR -->
-    <nav class="fixed bottom-6 left-14 right-0 z-[150] px-4 pointer-events-none font-sans">
+    <nav class="fixed bottom-6 left-12 right-0 z-[150] px-4 pointer-events-none font-sans">
         <div class="max-w-md mx-auto glass-nav flex justify-between items-center p-2 rounded-[2rem] pointer-events-auto shadow-2xl border border-white/10">
             <div class="flex items-center gap-1">
                 <button onclick="changeDay(-1)" class="w-11 h-11 flex items-center justify-center text-white active:scale-75 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
@@ -168,7 +126,7 @@
                 <button onclick="switchView('fix')" id="view-fix-btn" class="view-btn active flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">Fix</button>
                 <button onclick="switchView('explore')" id="view-explore-btn" class="view-btn flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">Explore</button>
             </div>
-            <button onclick="openActivityHub()" class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border border-white/20">🗺️</button>
+            <button onclick="openActivityHub()" class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl active:scale-90 transition-transform border border-white/20 font-sans">🗺️</button>
         </div>
     </nav>
 
@@ -178,12 +136,23 @@
         const flags = { "argentinien": "🇦🇷", "chile": "🇨🇱", "italien": "🇮🇹", "spanien": "🇪🇸", "australien": "🇦🇺", "kanada": "🇨🇦", "deutschland": "🇩🇪" };
         const regionImages = { "buenos aires": "https://images.pexels.com/photos/34104156/pexels-photo-34104156.jpeg?auto=format&fit=crop&w=800&q=80", "el calafate argentinien": "https://images.pexels.com/photos/9224586/pexels-photo-9224586.jpeg?auto=format&fit=crop&w=800&q=80", "torres del paine": "https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=800&q=80", "san pedro de atacama": "https://images.pexels.com/photos/20853000/pexels-photo-20853000.jpeg?auto=format&fit=crop&w=800&q=80" };
 
-        function getVal(obj, key) { if (!obj) return ""; const f = Object.keys(obj).find(k => k.toLowerCase().trim().replace(/\s/g, '') === key.toLowerCase().trim().replace(/\s/g, '')); return f ? obj[f].toString().trim() : ""; }
-        function getStickyVal(k) { for (let i = currentDayIndex; i >= 0; i--) { const rs = tripData.filter(d => parseInt(getVal(d, "Tag#")) === days[i]); for (let r of rs) { let v = getVal(r, k); if (v) return v; } } return ""; }
-        function getFlag(land) { if (!land) return ""; const l = land.trim().toLowerCase(); const map = { "ar": "🇦🇷", "cl": "🇨🇱", "it": "🇮🇹", "es": "🇪🇸", "au": "🇦🇺", "ca": "🇨🇦", "de": "🇩🇪", "argentinien": "🇦🇷", "chile": "🇨🇱", "italien": "🇮🇹", "spanien": "🇪🇸", "australien": "🇦🇺", "kanada": "🇨🇦", "deutschland": "🇩🇪" }; return map[l] || ""; }
+        function getVal(obj, key) { 
+            if (!obj) return ""; 
+            const foundKey = Object.keys(obj).find(k => k.replace(/[^\x20-\x7E]/g, '').toLowerCase().trim().replace(/\s/g, '') === key.toLowerCase().trim().replace(/\s/g, ''));
+            return foundKey ? obj[foundKey].toString().trim() : ""; 
+        }
 
-        function loadCSV() { Papa.parse("trip_data.csv", { download: true, header: true, skipEmptyLines: true, complete: r => { tripData = r.data; Papa.parse("photo_spots.csv", { download: true, header: true, skipEmptyLines: true, complete: r2 => { spotData = r2.data; Papa.parse("hikes.csv", { download: true, header: true, skipEmptyLines: true, complete: r3 => { hikeData = r3.data; processData(); }}); }}); }}); }
+        function getStickyVal(k) { 
+            for (let i = currentDayIndex; i >= 0; i--) { 
+                const rows = tripData.filter(d => parseInt(getVal(d, "Tag#")) === days[i]); 
+                for (let r of rows) { let v = getVal(r, k); if (v) return v; }
+            } 
+            return ""; 
+        }
+
+        function loadCSV() { Papa.parse("trip_data.csv", { download: true, header: true, skipEmptyLines: true, complete: r1 => { tripData = r1.data; Papa.parse("photo_spots.csv", { download: true, header: true, skipEmptyLines: true, complete: r2 => { spotData = r2.data; Papa.parse("hikes.csv", { download: true, header: true, skipEmptyLines: true, complete: r3 => { hikeData = r3.data; processData(); }}); }}); }}); }
         function timeToMinutes(t) { if (!t || !t.includes(':')) return 9999; const p = t.split(':'); return (parseInt(p[0]) * 60) + parseInt(p[1]); }
+        function getFlag(land) { if (!land) return ""; const map = { "ar": "🇦🇷", "cl": "🇨🇱", "it": "🇮🇹", "es": "🇪🇸", "au": "🇦🇺", "ca": "🇨🇦", "de": "🇩🇪", "argentinien": "🇦🇷", "chile": "🇨🇱", "italien": "🇮🇹", "spanien": "🇪🇸", "australien": "🇦🇺", "kanada": "🇨🇦", "deutschland": "🇩🇪" }; return map[land.trim().toLowerCase()] || ""; }
 
         function processData() {
             if (tripData.length === 0) return;
@@ -200,34 +169,35 @@
         function render() {
             const currentTagNum = days[currentDayIndex];
             const items = tripData.filter(i => parseInt(getVal(i, "Tag#")) === currentTagNum);
-            const region = getStickyVal("Region") || "Nature";
-            const land = getStickyVal("Land"), flag = getFlag(land);
-            const dateStr = getVal(items[0], "Datum") || "--. ---";
+            const region = getStickyVal("Region") || "Nature", land = getStickyVal("Land"), flag = getFlag(land);
             
-            // SIDEBAR TITLE
+            const dateStr = getVal(items[0], "Datum") || "--. ---";
+            document.getElementById('display-region').innerText = flag + (flag ? " " : "") + region;
+            document.getElementById('sunrise').innerText = getStickyVal("Sunrise") || "--:--";
+            document.getElementById('sunset').innerText = getStickyVal("Sunset") || "--:--";
+            const rate = getStickyVal("Rate"); document.getElementById('rate-container').classList.toggle('hidden', !rate); document.getElementById('display-rate').innerText = rate;
+            
+            const regionKey = region.toLowerCase().trim();
+            const fImg = tripData.find(r => getVal(r, "Region").toLowerCase().trim() === regionKey && getVal(r, "RegionImage") !== "");
+            document.getElementById('hero-img').src = fImg ? getVal(fImg, "RegionImage") : (regionImages[regionKey] || `https://source.unsplash.com/featured/1200x900?landscape,${encodeURIComponent(regionKey)}`);
+
             const path = window.location.pathname.split('/');
             const tripName = (path[path.length - 2] || "Trip").toUpperCase();
             document.getElementById('display-sidebar-title').innerText = tripName;
             document.getElementById('display-sidebar-tag').innerText = `TAG ${currentTagNum}`;
-            document.getElementById('display-day-num').innerText = dateStr.split(".")[0] || "--";
-            document.getElementById('display-month').innerText = dateStr.split(" ")[1] || "---";
 
-            // DATE SPAN LOGIC
+            // STAY DURATION LOGIC
             const regionTimeline = tripData.filter(i => getVal(i, "Region") !== "").map(i => ({ tag: parseInt(getVal(i, "Tag#")), reg: getVal(i, "Region"), datum: getVal(i, "Datum") }));
             let blockStart = currentTagNum, blockEnd = currentTagNum;
             for(let i = currentDayIndex; i >= 0; i--) { const r = regionTimeline.find(x => x.tag === days[i]); if(r && r.reg === region) blockStart = days[i]; else if(r) break; }
             for(let i = currentDayIndex; i < days.length; i++) { const r = regionTimeline.find(x => x.tag === days[i]); if(r && r.reg === region) blockEnd = days[i]; else if(r) break; }
             const startD = tripData.find(i => parseInt(getVal(i, "Tag#")) === blockStart && getVal(i, "Datum") !== "");
-            const endD = tripData.find(i => parseInt(getVal(i, "Tag#")) === (blockEnd + 1));
+            const endD = tripData.find(i => parseInt(getVal(i, "Tag#")) === (blockEnd + 1) && getVal(i, "Datum") !== "");
             document.getElementById('location-stay-span').innerText = `${getVal(startD, "Datum") || "--"} — ${getVal(endD, "Datum") || "Ende"}`;
-
-            document.getElementById('display-region').innerText = flag + (flag ? " " : "") + region;
-            document.getElementById('sunrise').innerText = getStickyVal("Sunrise") || "--:--";
-            document.getElementById('sunset').innerText = getStickyVal("Sunset") || "--:--";
-            const rate = getStickyVal("Rate"); document.getElementById('rate-container').classList.toggle('hidden', !rate); document.getElementById('display-rate').innerText = rate;
-            const regionKey = region.toLowerCase().trim();
-            const fImg = tripData.find(r => getVal(r, "Region").toLowerCase().trim() === regionKey && getVal(r, "RegionImage") !== "");
-            document.getElementById('hero-img').src = fImg ? getVal(fImg, "RegionImage") : (regionImages[regionKey] || `https://source.unsplash.com/featured/1200x900?landscape,${encodeURIComponent(regionKey)}`);
+            
+            const stayTotal = blockEnd - blockStart + 1;
+            const stayCurrent = currentTagNum - blockStart + 1;
+            document.getElementById('location-day-counter').innerText = `TAG ${stayCurrent} / ${stayTotal} HIER`;
 
             const hUrl = getStickyVal("Home");
             if(hUrl) {
@@ -247,8 +217,8 @@
             document.getElementById('hotel-overlay-img').src = getStickyVal("Home");
             document.getElementById('hotel-overlay-title').innerText = target;
             document.getElementById('hotel-stay-from').innerText = getD(start);
-            const checkout = tripData.find(i => parseInt(getVal(i, "Tag#")) === (end + 1));
-            document.getElementById('hotel-stay-to').innerText = checkout ? getVal(checkout, "Datum") : "Abreise";
+            const checkOutRow = tripData.find(i => parseInt(getVal(i, "Tag#")) === (end + 1));
+            document.getElementById('hotel-stay-to').innerText = checkOutRow ? getVal(checkOutRow, "Datum") : "Abreise";
             document.getElementById('hotel-nights').innerText = [...new Set(hotelDays)].length;
             document.getElementById('hotel-maps-link').href = getStickyVal("Homemap") || "#";
             document.getElementById('hotel-details-link').href = getStickyVal("Homelink") || "#";
@@ -261,25 +231,26 @@
             aC.innerHTML = ""; dC.innerHTML = "";
             items.filter(i => getVal(i, "Typ").toLowerCase() === "alert" || getVal(i, "Risiko")).forEach(i => {
                 const d = document.createElement('div'); d.className = "glass-alert p-5 shadow-lg mb-3";
-                d.innerHTML = `<div class="flex items-center gap-4 uppercase font-bold"><span>⚠️</span><div><p class="text-[10px] tracking-widest text-red-200">Alert</p><p class="text-sm text-white">${getVal(i, "Titel")} ${getVal(i, "Risiko") ? ' - ' + getVal(i, "Risiko") : ''}</p></div></div>`;
+                d.innerHTML = `<div class="flex items-center gap-4 font-sans uppercase font-bold"><span>⚠️</span><div><p class="text-[10px] tracking-widest text-red-200 font-sans">Alert</p><p class="text-sm text-white font-bold">${getVal(i, "Titel")} ${getVal(i, "Risiko") ? ' - ' + getVal(i, "Risiko") : ''}</p></div></div>`;
                 aC.appendChild(d);
             });
             if (currentView === 'fix') {
                 const fix = items.filter(i => getVal(i, "Startzeit") !== "" || getVal(i, "Kategorie").toLowerCase() === 'logistik').sort((a,b) => timeToMinutes(getVal(a,"Startzeit")) - timeToMinutes(getVal(b,"Startzeit")));
                 if(fix.length === 0) { dC.innerHTML = "<div class='py-10 text-center text-white/20 italic text-sm'>Leer.</div>"; return; }
                 fix.forEach(i => {
-                    const c = document.createElement('div'); c.className = "glass-card p-5 shadow-xl";
-                    c.innerHTML = `<div class="flex justify-between items-start gap-3 mb-4"><div class="flex items-center gap-5 flex-1 min-w-0"><div class="text-4xl font-sans">${icons[getVal(i,"Typ").toLowerCase()] || "📍"}</div><div class="min-w-0 flex-1"><p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">${getVal(i, "Typ")}</p><h3 class="font-bold text-white text-base leading-tight break-words font-sans">${getVal(i, "Titel")}</h3></div></div><div class="text-right flex-shrink-0 font-mono font-bold font-sans"><p class="text-base font-black text-white">${getVal(i, "Startzeit")}</p><p class="text-[9px] text-white/30 uppercase tracking-widest">${getVal(i, "Dauer")}</p></div></div><p class="text-xs text-white/50 leading-relaxed italic mb-4 ml-14 break-words">${getVal(item, "Details")}</p><div class="flex justify-between items-center ml-14 pt-3 border-t border-white/5">${getVal(i,"Maps") ? `<a href="${getVal(i,"Maps")}" target="_blank" class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest shadow-lg font-sans">📍 MAPS</a>` : '<span></span>'}<span class="text-[9px] font-mono text-white/20 uppercase font-sans">${getVal(i, "BookingCode") || getVal(i, "Anbieter") || ""}</span></div>`;
+                    if (getVal(i, "Typ").toLowerCase() === "alert") return;
+                    const c = document.createElement('div'); c.className = "glass-card p-5 shadow-xl font-sans";
+                    c.innerHTML = `<div class="flex justify-between items-start gap-3 mb-4"><div class="flex items-center gap-5 flex-1 min-w-0 font-sans"><div class="text-4xl">${icons[getVal(i,"Typ").toLowerCase()] || "📍"}</div><div class="min-w-0 flex-1"><p class="text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1 font-sans">${getVal(i, "Typ")}</p><h3 class="font-bold text-white text-base leading-tight break-words font-sans font-sans">${getVal(i, "Titel")}</h3></div></div><div class="text-right flex-shrink-0 font-mono font-bold font-sans"><p class="text-base font-black text-white font-sans">${getVal(i, "Startzeit")}</p><p class="text-[9px] text-white/30 uppercase tracking-widest font-sans">${getVal(i, "Dauer")}</p></div></div><p class="text-xs text-white/50 leading-relaxed italic mb-4 ml-14 break-words font-sans">${getVal(i, "Details")}</p><div class="flex justify-between items-center ml-14 pt-3 border-t border-white/5 font-sans">${getVal(i,"Maps") ? `<a href="${getVal(i,"Maps")}" target="_blank" class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest shadow-lg font-sans">📍 MAPS</a>` : '<span></span>'}<span class="text-[9px] font-mono text-white/20 uppercase font-sans">${getVal(i, "BookingCode") || getVal(i, "Anbieter") || ""}</span></div>`;
                     dC.appendChild(c);
                 });
             } else {
-                const rS = document.getElementById('display-region').innerText.toLowerCase().trim();
-                const curReg = rS.split(' ').pop();
+                const regStr = document.getElementById('display-region').innerText.toLowerCase().trim();
+                const curReg = regStr.split(' ').pop();
                 const comb = [...hikeData.filter(h => getVal(h, "Region").toLowerCase().includes(curReg)).map(i => ({...i, cat: 'hike'})), ...spotData.filter(s => getVal(s, "Region").toLowerCase().includes(curReg)).map(i => ({...i, cat: 'spot'}))];
                 comb.forEach(i => {
-                    const c = document.createElement('div'); c.className = "glass-card p-4 shadow-xl flex items-center gap-4";
+                    const c = document.createElement('div'); c.className = "glass-card p-4 shadow-xl flex items-center gap-4 font-sans";
                     c.onclick = () => openActivityHub(getVal(i, "Title"));
-                    c.innerHTML = `<div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 font-sans"><img src="${getVal(i,"Image")}" class="w-full h-full object-cover"></div><div class="flex-1 min-w-0 font-sans font-bold"><p class="text-[9px] font-black ${i.cat === 'hike' ? 'text-emerald-400' : 'text-orange-400'} uppercase tracking-widest mb-1 font-sans">Explore</p><h3 class="font-bold text-white text-sm leading-tight break-words font-sans font-sans">${getVal(i, "Title")}</h3></div><div class="text-white/20">❯</div>`;
+                    c.innerHTML = `<div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 border border-white/10"><img src="${getVal(i,"Image")}" class="w-full h-full object-cover"></div><div class="flex-1 min-w-0 font-sans font-bold font-sans font-sans"><p class="text-[9px] font-black ${i.cat === 'hike' ? 'text-emerald-400' : 'text-orange-400'} uppercase tracking-widest mb-1 font-sans">Explore</p><h3 class="font-bold text-white text-sm leading-tight break-words font-sans">${getVal(i, "Title")}</h3></div><div class="text-white/20">❯</div>`;
                     dC.appendChild(c);
                 });
             }
@@ -296,9 +267,9 @@
             const slider = document.getElementById('unified-slider'); slider.innerHTML = "";
             comb.forEach(i => {
                 const isH = i.cat === 'hiking', id = getVal(i, "Title"), done = (localStorage.getItem('done_items') || '[]').includes(id);
-                const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden activity-slide ${done ? 'item-done' : ''}`;
+                const card = document.createElement('div'); card.className = `min-w-full h-full snap-center relative overflow-hidden ${done ? 'item-done' : ''}`;
                 card.id = "slide-" + btoa(id).substring(0,10);
-                card.innerHTML = `<img src="${getVal(i, "Image")}" class="absolute inset-0 w-full h-full object-cover font-sans"><button onclick="toggleGlobalDone('${id}')" class="absolute top-8 right-6 z-30 w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)]' : 'bg-black/30 text-white/60'} text-2xl transition-all shadow-xl font-sans">✓</button><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest font-sans"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl font-sans">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20 font-black italic tracking-tighter uppercase font-sans"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl font-sans">${getVal(i, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest font-sans font-sans font-sans"><span class="bg-white/10 px-2 py-1 rounded">📏 ${getVal(i, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded">▲ ${getVal(i, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed font-medium font-sans font-sans">"${getVal(i, "Details")}"</p><div class="flex items-center gap-3 font-sans font-sans font-sans font-sans font-sans"><a href="${isH ? getVal(i, "KomootLink") : (getVal(i, "Maps") || '#')}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="closeOverlay('activity-overlay')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 bg-black/40 backdrop-blur-md text-white text-2xl transition-all shadow-xl font-sans font-sans">&times;</button></div></div>`;
+                card.innerHTML = `<img src="${getVal(i, "Image")}" class="absolute inset-0 w-full h-full object-cover font-sans"><button onclick="toggleGlobalDone('${id}')" class="absolute top-8 right-6 z-30 w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 backdrop-blur-md ${done ? 'bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)]' : 'bg-black/30 text-white/60'} text-2xl shadow-xl font-sans">✓</button><div class="absolute top-8 left-6 z-10 flex flex-col gap-2 font-bold uppercase tracking-widest font-sans"><div class="${isH ? 'bg-emerald-600' : 'bg-orange-600'} border border-white/10 px-3 py-1.5 rounded-full text-white text-[10px] tracking-widest shadow-xl font-sans">${isH ? '🥾 HIKE' : '📸 PHOTO'}</div></div><div class="absolute inset-x-0 bottom-0 spot-text-gradient p-10 pt-32 flex flex-col justify-end z-20 font-sans font-sans font-sans"><h3 class="text-3xl font-black text-white leading-tight mb-2 drop-shadow-2xl font-sans">${getVal(i, "Title")}</h3>${isH ? `<div class="flex gap-3 mb-4 text-white/80 font-mono text-[10px] font-bold uppercase tracking-widest font-sans"><span class="bg-white/10 px-2 py-1 rounded font-sans">📏 ${getVal(i, "KM")}km</span><span class="bg-white/10 px-2 py-1 rounded font-sans">▲ ${getVal(i, "HM")}m</span></div>` : ''}<p class="text-white/80 text-sm mb-8 italic leading-relaxed font-sans font-sans font-medium">"${getVal(i, "Details")}"</p><div class="flex items-center gap-3 font-sans font-sans font-sans font-sans font-sans font-sans"><a href="${isH ? getVal(i, "KomootLink") : (getVal(i, "Maps") || '#')}" target="_blank" class="flex-1 flex items-center justify-center gap-2 text-white font-black text-xs uppercase tracking-[0.2em] py-5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 active:bg-white/30 transition-all font-sans font-sans">${isH ? '🗺️ Komoot' : '📍 Standort'}</a><button onclick="closeOverlay('activity-overlay')" class="w-16 h-16 flex items-center justify-center rounded-2xl border border-white/20 bg-black/40 backdrop-blur-md text-white text-2xl transition-all shadow-xl">&times;</button></div></div>`;
                 slider.appendChild(card);
             });
             if (t) { const tId = "slide-" + btoa(t).substring(0,10); setTimeout(() => { const el = document.getElementById(tId); if (el) el.scrollIntoView({ behavior: 'auto', inline: 'center' }); }, 10); }
@@ -309,12 +280,7 @@
         function changeDay(d) { if (days[currentDayIndex + d]) { currentDayIndex += d; render(); document.getElementById('scroll-container').scrollTo(0,0); } }
 
         document.addEventListener('touchstart', e => { sX = e.touches[0].clientX; sY = e.touches[0].clientY; }, { passive: true });
-        document.addEventListener('touchend', e => {
-            const overlays = ['activity-overlay', 'image-overlay', 'home-modal', 'hotel-overlay'];
-            if (overlays.some(id => !document.getElementById(id).classList.contains('hidden')) || isPeeking) return;
-            let dX = sX - e.changedTouches[0].clientX, dY = sY - e.changedTouches[0].clientY;
-            if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 80) changeDay(dX > 0 ? 1 : -1);
-        }, { passive: true });
+        document.addEventListener('touchend', e => { const overlays = ['activity-overlay', 'image-overlay', 'home-modal', 'hotel-overlay']; if (overlays.some(id => !document.getElementById(id).classList.contains('hidden')) || isPeeking) return; let dX = sX - e.changedTouches[0].clientX, dY = sY - e.changedTouches[0].clientY; if (Math.abs(dX) > Math.abs(dY) && Math.abs(dX) > 80) changeDay(dX > 0 ? 1 : -1); }, { passive: true });
         let pT; const trig = document.getElementById('trip-sidebar'); trig.onmousedown = () => pT = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600); trig.onmouseup = () => clearTimeout(pT); trig.ontouchstart = () => pT = setTimeout(() => document.getElementById('home-modal').classList.add('open'), 600); trig.ontouchend = () => clearTimeout(pT);
         loadCSV();
     </script>
